@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate, redirect } from "react-router-dom";
 import GuestLayout from "./layouts/GuestLayout";
 import Login from "./modules/Login";
 import DefaultLayout from "./layouts/DefaultLayout";
-import Dashboard from "./modules/Dashboard";
 import { auth } from "./services/firebase/config";
 import Personnel from "./modules/Personnel";
 
@@ -27,7 +26,7 @@ const guestLoader = async () => {
       unsubscribe();
       if (user) {
         // If logged in, redirect to dashboard
-        return resolve(redirect("/dashboard"));
+        return resolve(redirect("/personnels"));
       }
       resolve(null);
     });
@@ -43,11 +42,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" />,
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />
+        element: <Navigate to="/personnels" />,
       },
       {
         path: "personnels",

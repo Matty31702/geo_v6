@@ -103,12 +103,12 @@ const Personnel = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm text-gray-500 mb-1">Total Personnel</h3>
           <p className="text-2xl font-bold text-gray-800">{totalPersonnel}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        {/* <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm text-gray-500 mb-1">Verified Personnel</h3>
           <div className="flex items-center">
             <p className="text-2xl font-bold text-green-600">{verifiedCount}</p>
@@ -116,7 +116,7 @@ const Personnel = () => {
               ({totalPersonnel ? Math.round((verifiedCount / totalPersonnel) * 100) : 0}%)
             </span>
           </div>
-        </div>
+        </div> */}
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm text-gray-500 mb-1">Pending Verification</h3>
           <p className="text-2xl font-bold text-amber-500">{unverifiedCount}</p>

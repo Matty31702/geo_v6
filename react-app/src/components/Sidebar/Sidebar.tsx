@@ -75,12 +75,12 @@ const Sidebar = () => {
             }`}
           >
             <nav className="space-y-4">
-              <NavButton
+              {/* <NavButton
               to="/dashboard"
                 icon={<LayoutDashboard size={20} />}
                 text="Dashboard"
                 isExpanded={sidebarOpen}
-              />
+              /> */}
               <NavButton
                             to="/personnels"
 
