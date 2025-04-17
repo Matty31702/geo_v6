@@ -4,6 +4,7 @@ import { Search, RefreshCw, MapPin, Plus } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import AddUserModal from "./components/AddUserModal";
+import showToast from "../../utilities/toast";
 
 const Personnel = () => {
   const { loading, error, personnels, getAllPersonnels } = usePersonnel();
@@ -76,6 +77,7 @@ const Personnel = () => {
     // Refresh the personnel list
     getAllPersonnels();
     // Show success message or notification if needed
+    showToast.success("Successfully created a new personnel!");
   };
 
   /* const exportToCSV = () => {
@@ -90,8 +92,6 @@ const Personnel = () => {
   return (
     <>
       <CustomHelmet title="Personnels | Geobound" />
-
-      
 
       <div className="p-6 bg-gray-50 min-h-screen">
         {/* Header Section */}
