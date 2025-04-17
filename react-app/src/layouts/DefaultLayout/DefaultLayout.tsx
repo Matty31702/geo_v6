@@ -6,6 +6,7 @@ const pageTitles: any = {
   '/dashboard': 'Dashboard',
   '/personnels': 'Personnel Management',
   '/vehicles': 'Vehicle Management',
+  '/monitoring': 'Monitoring personnels and vehicles',
   // Add more routes as needed
 };
 
