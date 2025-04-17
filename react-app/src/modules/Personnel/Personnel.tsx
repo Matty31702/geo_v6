@@ -233,7 +233,7 @@ const Personnel = () => {
                       Sector
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
+                      Coordinates
                     </th>
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th> */}
@@ -274,12 +274,12 @@ const Personnel = () => {
                           {person.sector}
                         </td>
                         <td className="px-4 py-3">
-                          <div
+                          {/* <div
                             className="text-sm text-gray-900 truncate max-w-xs"
                             title={person.address}
                           >
                             {person.address}
-                          </div>
+                          </div> */}
                           <div className="text-xs text-gray-500">
                             {person.lat}, {person.lng}
                           </div>
