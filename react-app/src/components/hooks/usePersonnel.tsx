@@ -20,7 +20,7 @@ const usePersonnel = () => {
       
       // Set state
       if (personnels.data) {
-        console.log(personnels.data);
+        // console.log(personnels.data);
         setPersonnels(personnels.data);
       } else {
         setError("An error occured while fetching personnels");

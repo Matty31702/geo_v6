@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import usePersonnel from "../../components/hooks/usePersonnel";
 import { Search, Filter, Download, Printer, RefreshCw, UserCheck, UserX, MapPin } from "lucide-react";
+import CustomHelmet from "../../components/CustomHelmet";
 
 const Personnel = () => {
   const { loading, error, personnels, getAllPersonnels } = usePersonnel();
@@ -73,6 +74,9 @@ const Personnel = () => {
   }; */
 
   return (
+    <>
+    <CustomHelmet title="Personnels | Geobound" />
+
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-6">
@@ -378,6 +382,7 @@ const Personnel = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 
