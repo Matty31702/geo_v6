@@ -2,6 +2,7 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
+  LayoutDashboard,
   LogIn,
   Truck,
   Users,
@@ -18,19 +19,19 @@ const Sidebar = () => {
   };
 
   // Handle responsive behavior
-    useEffect(() => {
-      const handleResize = () => {
-        setIsMobile(window.innerWidth < 768);
-        if (window.innerWidth < 768) {
-          setSidebarOpen(false);
-        }
-      };
-  
-      window.addEventListener('resize', handleResize);
-      handleResize(); // Check on initial load
-      
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Check on initial load
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <>
@@ -53,7 +54,7 @@ const Sidebar = () => {
         <div className="h-full flex flex-col">
           {/* Logo Container */}
           <div className="flex justify-center items-center py-6 border-b border-blue-800">
-            <div
+            <div  
               className={`transition-all duration-300 ${
                 sidebarOpen ? "w-32 h-32" : "w-10 h-10"
               }`}
@@ -73,6 +74,11 @@ const Sidebar = () => {
             }`}
           >
             <nav className="space-y-4">
+              <NavButton
+                icon={<LayoutDashboard size={20} />}
+                text="Dashboard"
+                isExpanded={sidebarOpen}
+              />
               <NavButton
                 icon={<Users size={20} />}
                 text="Number of Personnel"

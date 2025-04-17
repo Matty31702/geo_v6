@@ -1,5 +1,7 @@
 import { LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../../services/firebase/config";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
@@ -21,6 +23,18 @@ const Navbar = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      // After successful logout, the AuthProvider will redirect to login page
+      // Or you can redirect manually: window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setDropdownOpen(false);
+    }
+  };
+
   return (
     <>
       {/* Header with Admin dropdown */}
@@ -31,7 +45,9 @@ const Navbar = () => {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={toggleDropdown}
-            className="flex items-center gap-2 hover:bg-blue-700 py-1 px-3 rounded-full transition-colors duration-200"
+            className={`flex items-center gap-2 hover:bg-blue-700 py-1 px-3 rounded-full transition-colors duration-200 ${
+              dropdownOpen && "bg-blue-700"
+            }`}
             aria-expanded={dropdownOpen}
             aria-haspopup="true"
           >
@@ -47,10 +63,7 @@ const Navbar = () => {
               <div className="py-1">
                 <button
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                  onClick={() => {
-                    // Add logout functionality here
-                    setDropdownOpen(false);
-                  }}
+                  onClick={handleLogout}
                 >
                   <LogOut size={16} />
                   <span>Logout</span>

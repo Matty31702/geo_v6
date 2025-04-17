@@ -1,34 +1,67 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, redirect } from "react-router-dom";
 import GuestLayout from "./layouts/GuestLayout";
 import Login from "./modules/Login";
 import DefaultLayout from "./layouts/DefaultLayout";
 import Dashboard from "./modules/Dashboard";
+import { auth } from "./services/firebase/config";
+
+// Authentication loader function
+const authLoader = async () => {
+  return new Promise((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      unsubscribe();
+      if (!user) {
+        // If not logged in, redirect to login
+        return resolve(redirect("/login"));
+      }
+      resolve(null);
+    });
+  });
+};
+
+// Guest routes loader
+const guestLoader = async () => {
+  return new Promise((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      unsubscribe();
+      if (user) {
+        // If logged in, redirect to dashboard
+        return resolve(redirect("/dashboard"));
+      }
+      resolve(null);
+    });
+  });
+};
 
 // Create router
 const router = createBrowserRouter([
-  
   {
-    path:"/",
+    path: "/",
     element: <DefaultLayout />,
+    loader: authLoader,
     children: [
       {
         index: true,
+        element: <Navigate to="/dashboard" />,
+      },
+      {
+        path: "dashboard",
         element: <Dashboard />
       }
     ]
   },
-
   {
     path: "/",
     element: <GuestLayout />,
     children: [
       {
         index: true,
-        element: <Navigate to={"/login"} />,
+        element: <Navigate to="/login" />,
       },
       {
         path: "/login",
         element: <Login />,
+        loader: guestLoader,
       },
     ],
   },
