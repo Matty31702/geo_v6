@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import usePersonnel from "../../components/hooks/usePersonnel";
-import { Search, Filter, Download, Printer, RefreshCw, UserCheck, UserX, MapPin } from "lucide-react";
+import { Search, RefreshCw, MapPin } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 
 const Personnel = () => {
+
+
   const { loading, error, personnels, getAllPersonnels } = usePersonnel();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("");
@@ -107,7 +109,7 @@ const Personnel = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm text-gray-500 mb-1">Total Personnel</h3>
           <p className="text-2xl font-bold text-gray-800">{totalPersonnel}</p>
@@ -121,11 +123,11 @@ const Personnel = () => {
             </span>
           </div>
         </div> */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        {/* <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm text-gray-500 mb-1">Pending Verification</h3>
           <p className="text-2xl font-bold text-amber-500">{unverifiedCount}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        </div> */}
+        {/* <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm text-gray-500 mb-1">Personnel Types</h3>
           <div className="text-sm mt-2 max-h-20 overflow-auto">
             {Object.entries(personnelByType).map(([type, count]) => (
@@ -135,7 +137,7 @@ const Personnel = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Search and Filter Section */}
@@ -154,7 +156,7 @@ const Personnel = () => {
             </div>
           </div>
           <div className="w-full md:w-auto flex flex-wrap gap-2">
-            <div className="relative">
+            {/* <div className="relative">
               <Filter size={20} className="absolute left-3 top-2.5 text-gray-400" />
               <select
                 className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
@@ -166,7 +168,7 @@ const Personnel = () => {
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
-            </div>
+            </div> */}
             <div className="relative">
               <MapPin size={20} className="absolute left-3 top-2.5 text-gray-400" />
               <select
@@ -211,13 +213,13 @@ const Personnel = () => {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th> */}
+                  {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th> */}
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sector</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
+                  {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th> */}
+                  {/* <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th> */}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -236,15 +238,15 @@ const Personnel = () => {
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{person.name || "-"}</div>
                       </td>
-                      <td className="px-4 py-3">
+                      {/* <td className="px-4 py-3">
                         <div className="text-sm text-gray-900">{person.email || "-"}</div>
                         <div className="text-sm text-gray-500">{person.number || "-"}</div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      </td> */}
+                      {/* <td className="px-4 py-3 whitespace-nowrap">
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                           {person.type}
                         </span>
-                      </td>
+                      </td> */}
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                         {person.sector}
                       </td>
@@ -256,7 +258,7 @@ const Personnel = () => {
                           {person.lat}, {person.lng}
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      {/* <td className="px-4 py-3 whitespace-nowrap">
                         {person.isVerified ? (
                           <span className="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                             <UserCheck size={14} className="mr-1" /> Verified
@@ -266,21 +268,24 @@ const Personnel = () => {
                             <UserX size={14} className="mr-1" /> Pending
                           </span>
                         )}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                      </td> */}
+                      {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                         {new Date(person.dateTime.seconds * 1000).toLocaleDateString()}
                         <div className="text-xs text-gray-400">
                           {new Date(person.dateTime.seconds * 1000).toLocaleTimeString()}
                         </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
-                        <button className="text-blue-600 hover:text-blue-800 mr-2">
+                      </td> */}
+                      {/* <td className="px-4 py-3 space-x-3 text-sm text-center">
+                        <button className="text-blue-600 hover:text-blue-800">
                           View
                         </button>
                         <button className="text-gray-600 hover:text-gray-800">
                           Edit
                         </button>
-                      </td>
+                        <button className="text-red-600 hover:text-red-800">
+                          Delete
+                        </button>
+                      </td> */}
                     </tr>
                   ))
                 )}

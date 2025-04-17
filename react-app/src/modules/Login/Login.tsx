@@ -34,7 +34,7 @@ const Login = () => {
 
       // First, check if the user ID exists in our Firestore
       const { data: userData, error: dbError } =
-        await authService.getDocument<User>("Users", userId);
+        await authService.getDocumentByUsername<User>("Users", userId);
 
       if (dbError) {
         setError("Error checking user information");
@@ -50,7 +50,7 @@ const Login = () => {
 
       // Check if user type matches
       const userType = userData.type; // "Personnel" in your case
-      console.log(userData);
+      // console.log(userData);
       if (
         (loginType === "admin" && userType !== "Admin") ||
         (loginType === "superadmin" && userType !== "SuperAdmin")
@@ -80,8 +80,8 @@ const Login = () => {
         return;
       }
 
-      // If successful, navigate to dashboard
-      navigate("/dashboard");
+      // If successful, navigate to personnels
+      navigate("/personnels");
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);

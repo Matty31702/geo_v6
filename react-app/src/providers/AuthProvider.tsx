@@ -14,7 +14,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       
       // If user is logged in and trying to access login page, redirect to dashboard
       if (currentUser && currentPath === "/login") {
-        window.location.href = "/dashboard";
+        window.location.href = "/personnels";
       }
       
       // If user is not logged in and trying to access protected routes, redirect to login

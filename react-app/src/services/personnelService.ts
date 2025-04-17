@@ -12,7 +12,10 @@ const personnelService = {
         ...(doc.data() as Omit<Personnel, "id">),
       }));
 
-      return { data: users, error: null };
+      // Filter to include only Personnel type
+      const personnels = users.filter((user) => user.type === "Personnel");
+
+      return { data: personnels, error: null };
     } catch (error: any) {
       return { data: null, error: error.message };
     }
