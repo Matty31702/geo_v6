@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
@@ -75,26 +76,35 @@ const Sidebar = () => {
           >
             <nav className="space-y-4">
               <NavButton
+              to="/dashboard"
                 icon={<LayoutDashboard size={20} />}
                 text="Dashboard"
                 isExpanded={sidebarOpen}
               />
               <NavButton
+                            to="/personnels"
+
                 icon={<Users size={20} />}
                 text="Number of Personnel"
                 isExpanded={sidebarOpen}
               />
               <NavButton
+                            to="/vehicles"
+
                 icon={<Truck size={20} />}
                 text="Vehicles"
                 isExpanded={sidebarOpen}
               />
               <NavButton
+                            to="/logged-entries-and-exit"
+
                 icon={<LogIn size={20} />}
                 text="Logged Entry/Exit"
                 isExpanded={sidebarOpen}
               />
               <NavButton
+                            to="/monitoring"
+
                 icon={<Activity size={20} />}
                 text="Monitor Realtime Status"
                 isExpanded={sidebarOpen}
@@ -109,25 +119,32 @@ const Sidebar = () => {
 
 // Navigation Button Component
 const NavButton = ({
+  to,
   icon,
   text,
   isExpanded,
 }: {
+  to: string;
   icon: ReactNode;
   text: string;
   isExpanded: boolean;
 }) => {
   return (
-    <button
-      className={`w-full flex items-center ${
+    <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `w-full flex items-center ${
         isExpanded ? "justify-start gap-3" : "justify-center"
-      } bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-medium py-3 ${
-        isExpanded ? "px-4" : "px-2"
-      } rounded shadow-sm transition-all duration-200`}
-    >
-      {icon}
-      {isExpanded && <span>{text}</span>}
-    </button>
+      } ${
+        isActive
+          ? "bg-yellow-500 text-blue-950"
+          : "bg-yellow-400 hover:bg-yellow-500 text-blue-900"
+      } font-medium py-3 ${isExpanded ? "px-4" : "px-2"} rounded shadow-sm transition-all duration-200`
+    }
+  >
+    {icon}
+    {isExpanded && <span>{text}</span>}
+  </NavLink>
   );
 };
 

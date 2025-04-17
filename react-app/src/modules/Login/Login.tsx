@@ -50,8 +50,9 @@ const Login = () => {
 
       // Check if user type matches
       const userType = userData.type; // "Personnel" in your case
+      console.log(userData);
       if (
-        (loginType === "admin" && userType !== "Personnel") ||
+        (loginType === "admin" && userType !== "Admin") ||
         (loginType === "superadmin" && userType !== "SuperAdmin")
       ) {
         setError(

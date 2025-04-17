@@ -1,9 +1,12 @@
+import CustomHelmet from "../../components/CustomHelmet"
 
 const Dashboard = () => {
   return (
-    <div>
+    <>
+      <CustomHelmet title="Dashboard | Geobound" />
       
-    </div>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique obcaecati, assumenda aut architecto optio ad totam at iure libero error, officia voluptatibus maxime id temporibus quia animi voluptate eius? Ducimus!</p>
+    </>
   )
 }
 

@@ -4,6 +4,7 @@ import Login from "./modules/Login";
 import DefaultLayout from "./layouts/DefaultLayout";
 import Dashboard from "./modules/Dashboard";
 import { auth } from "./services/firebase/config";
+import Personnel from "./modules/Personnel";
 
 // Authentication loader function
 const authLoader = async () => {
@@ -47,7 +48,11 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <Dashboard />
-      }
+      },
+      {
+        path: "personnels",
+        element: <Personnel />,
+      },
     ]
   },
   {

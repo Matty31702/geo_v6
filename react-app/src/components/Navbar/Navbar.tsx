@@ -3,7 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../services/firebase/config";
 
-const Navbar = () => {
+interface NavbarProps {
+  title: string;
+}
+
+const Navbar: React.FC<NavbarProps> = ({title}) => {
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const dropdownRef = useRef<any>(null);
 
@@ -39,7 +43,7 @@ const Navbar = () => {
     <>
       {/* Header with Admin dropdown */}
       <header className="bg-blue-800 text-white shadow-md p-4 flex justify-between items-center">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <h1 className="text-xl font-semibold">{title}</h1>
 
         {/* Admin dropdown */}
         <div className="relative" ref={dropdownRef}>
