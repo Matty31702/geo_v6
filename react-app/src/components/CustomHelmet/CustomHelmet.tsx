@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 interface CustomHelmetProps {
   title?: string;
@@ -12,7 +12,6 @@ const CustomHelmet: React.FC<CustomHelmetProps> = ({
 }) => {
   return (
     <Helmet>
-      <meta charSet="utf-8" />
       <title>{title}</title>
       {children}
     </Helmet>
