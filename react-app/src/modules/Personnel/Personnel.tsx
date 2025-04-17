@@ -68,7 +68,8 @@ const Personnel = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
+   
+  // Handle refresh function
   const handleRefresh = () => {
     getAllPersonnels();
   };

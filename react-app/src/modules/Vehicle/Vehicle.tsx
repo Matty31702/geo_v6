@@ -5,6 +5,8 @@ import useVehicle from "../../components/hooks/useVehicle";
 import { PenTool, Plus, RefreshCw, Search } from "lucide-react";
 import type { Vehicle } from "../../types/firestore";
 import PaginationControl from "../../components/paginations/PaginationControl";
+import AddVehicleModal from "./components/AddVehicleModal";
+import showToast from "../../utilities/toast";
 
 const Vehicle = () => {
   // Use vehicle
@@ -15,7 +17,7 @@ const Vehicle = () => {
   const [filterColor, setFilterColor] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterType, setFilterType] = useState<string>("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // State for modal visibility
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
   const itemsPerPage = 10;
 
   // Get unique personnel types and sectors for filters
@@ -24,7 +26,17 @@ const Vehicle = () => {
   ];
 
   // Handle refresh function
-  const handleRefresh = () => {};
+  const handleRefresh = () => {
+    getAllVehicles();
+  };
+
+  // Handle successsful vehicle addition
+  const handleVehicleAdd = () => {
+    // Refresh the vehicle list
+    getAllVehicles();
+    // Show success message or notification if needed
+    showToast.success("Successfully created a new vehicle!");
+  };
 
   // Filter vehicle based on search and filers
   const filteredVehicle =
@@ -161,6 +173,9 @@ const Vehicle = () => {
                       Model
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Color
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Plate Number
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -191,6 +206,11 @@ const Vehicle = () => {
                             {vehicle.model || "-"}
                           </div>
                         </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {vehicle.color || "-"}
+                          </div>
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {vehicle.plate_number}
                         </td>
@@ -215,6 +235,12 @@ const Vehicle = () => {
           </div>
         )}
       </div>
+
+      <AddVehicleModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onVehicleAdded={handleVehicleAdd}
+      />
     </>
   );
 };

@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, database } from "../../../../services/firebase/config";
 import { X, Plus, Upload, Loader2 } from "lucide-react";
+import { validateUserForm } from "../../../../utilities/Validation";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     profile: "",
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const fileInputRef = useRef<any>(null);
@@ -62,26 +63,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     fileInputRef.current.click();
   };
 
-  // Form validation
-  const validateForm = () => {
-    if (!formData.name.trim()) return "Name is required";
-    if (!formData.email.trim()) return "Email is required";
-    if (!formData.password.trim()) return "Password is required";
-    if (formData.password.length < 6)
-      return "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword)
-      return "Passwords do not match";
-    if (!formData.phone_number.trim()) return "Phone number is required";
-    if (!formData.address.trim()) return "Address is required";
-    if (!formData.sector) return "Sector is required";
-    return "";
-  };
-
   // Handle form submission
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const validationError = validateForm();
+    const validationError = validateUserForm(formData);
     if (validationError) {
       setError(validationError);
       return;
@@ -171,7 +157,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         <form onSubmit={handleSubmit} className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Profile Image */}
-            {/* <div className="col-span-full flex justify-center mb-4">
+            <div className="col-span-full flex justify-center mb-4">
               <div
                 onClick={handleProfileClick}
                 className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-full flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
@@ -198,7 +184,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                   className="hidden"
                 />
               </div>
-            </div> */}
+            </div>
 
             {/* Name */}
             <div className="col-span-full md:col-span-1">

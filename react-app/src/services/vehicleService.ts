@@ -1,6 +1,7 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { FirestoreResponse, Vehicle } from "../types/firestore";
 import { database } from "./firebase/config";
+import { FormDataProps } from "../modules/Vehicle/components/AddVehicleModal/AddVehicleModal";
 
 const vehicleService = {
   // Get all vehicles
@@ -18,6 +19,16 @@ const vehicleService = {
       return { data: vehicles, error: null };
     } catch (error: any) {
       return { data: null, error: error.message };
+    }
+  },
+
+  // Add vehicle
+  async addVehicle(data: FormDataProps): Promise<void> {
+    try {
+      const vehicleRef = doc(collection(database, "Vehicles")); // auto-generates ID
+      await setDoc(vehicleRef, data);
+    } catch (error: any) {
+      console.error(error);
     }
   },
 };
