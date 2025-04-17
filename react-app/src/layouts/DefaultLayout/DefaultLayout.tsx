@@ -5,7 +5,7 @@ import Navbar from '../../components/Navbar';
 const pageTitles: any = {
   '/dashboard': 'Dashboard',
   '/personnels': 'Personnel Management',
-  '/settings': 'Settings',
+  '/vehicles': 'Vehicle Management',
   // Add more routes as needed
 };
 

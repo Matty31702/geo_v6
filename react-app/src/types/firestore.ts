@@ -32,6 +32,17 @@ export interface Personnel {
   lng: number
 }
 
+export interface Vehicle {
+  uid: string;
+  datetime: string;
+  lat: number;
+  long: number;
+  model: string;
+  color: string;
+  plate_number: string;
+  user_id:string
+}
+
 export interface FirestoreResponse<T> {
   data: T | null;
   error: string | null;

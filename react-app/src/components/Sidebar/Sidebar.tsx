@@ -55,7 +55,7 @@ const Sidebar = () => {
         <div className="h-full flex flex-col">
           {/* Logo Container */}
           <div className="flex justify-center items-center py-6 border-b border-blue-800">
-            <div  
+            <div
               className={`transition-all duration-300 ${
                 sidebarOpen ? "w-32 h-32" : "w-10 h-10"
               }`}
@@ -82,29 +82,25 @@ const Sidebar = () => {
                 isExpanded={sidebarOpen}
               /> */}
               <NavButton
-                            to="/personnels"
-
+                to="/personnels"
                 icon={<Users size={20} />}
                 text="Number of Personnel"
                 isExpanded={sidebarOpen}
               />
               <NavButton
-                            to="/vehicles"
-
+                to="/vehicles"
                 icon={<Truck size={20} />}
                 text="Vehicles"
                 isExpanded={sidebarOpen}
               />
               <NavButton
-                            to="/logged-entries-and-exit"
-
+                to="/logged-entries-and-exit"
                 icon={<LogIn size={20} />}
                 text="Logged Entry/Exit"
                 isExpanded={sidebarOpen}
               />
               <NavButton
-                            to="/monitoring"
-
+                to="/monitoring"
                 icon={<Activity size={20} />}
                 text="Monitor Realtime Status"
                 isExpanded={sidebarOpen}
@@ -131,20 +127,22 @@ const NavButton = ({
 }) => {
   return (
     <NavLink
-    to={to}
-    className={({ isActive }) =>
-      `w-full flex items-center ${
-        isExpanded ? "justify-start gap-3" : "justify-center"
-      } ${
-        isActive
-          ? "bg-yellow-500 text-blue-950"
-          : "bg-yellow-400 hover:bg-yellow-500 text-blue-900"
-      } font-medium py-3 ${isExpanded ? "px-4" : "px-2"} rounded shadow-sm transition-all duration-200`
-    }
-  >
-    {icon}
-    {isExpanded && <span>{text}</span>}
-  </NavLink>
+      to={to}
+      className={({ isActive }) =>
+        `w-full flex items-center ${
+          isExpanded ? "justify-start gap-3" : "justify-center"
+        } ${
+          isActive
+            ? "bg-yellow-500 text-blue-950"
+            : "bg-yellow-400 hover:bg-yellow-500 text-blue-900"
+        } font-medium py-3 ${
+          isExpanded ? "px-4" : "px-2"
+        } rounded shadow-sm transition-all duration-200`
+      }
+    >
+      {icon}
+      {isExpanded && <span>{text}</span>}
+    </NavLink>
   );
 };
 
