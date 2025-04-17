@@ -33,7 +33,7 @@ export interface Personnel {
 }
 
 export interface Vehicle {
-  uid: string;
+  id: string;
   datetime: string;
   lat: number;
   long: number;
