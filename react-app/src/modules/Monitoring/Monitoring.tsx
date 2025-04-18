@@ -13,6 +13,7 @@ import MapHeader from "./components/MapHeader";
 import CustomMapContainer from "./components/CustomMapContainer";
 import PersonnelList from "./components/PersonnelList";
 import MapLegendContainer from "./components/MapLegendContainer";
+import CustomHelmet from "../../components/CustomHelmet";
 
 const Monitoring = () => {
   // Use custom hook to get personnel data
@@ -77,7 +78,10 @@ const Monitoring = () => {
   );
 
   return (
-    <div className="flex flex-col bg-gray-100 p-4 rounded-lg shadow-lg w-full max-w-6xl mx-auto">
+    <>
+      <CustomHelmet title="Monitoring | Geobound" />
+
+      <div className="flex flex-col bg-gray-100 p-4 rounded-lg shadow-lg w-full max-w-6xl mx-auto">
       <MapHeader
         loading={loading}
         refreshing={refreshing}
@@ -97,9 +101,6 @@ const Monitoring = () => {
           filteredPersonnel={filteredPersonnel}
           allMarkers={allMarkers}
         />
-
-        {/* Personnel List */}
-        <PersonnelList loading={loading} error={error} filteredPersonnel={filteredPersonnel} />
       </div>
 
       <MapLegendContainer sectors={sectors} sectorCounts={sectorCounts} />
@@ -116,6 +117,7 @@ const Monitoring = () => {
         <p>Last updated: {new Date().toLocaleString()}</p>
       </div>
     </div>
+    </>
   );
 };
 

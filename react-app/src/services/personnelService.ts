@@ -81,10 +81,33 @@ const personnelService = {
       // Add user to Firestore
       await setDoc(doc(database, "Users", user.uid), {
         ...formData,
-        type: "Personnel"
+        type: "Personnel",
       });
     } catch (error: any) {
       console.error(error);
+    }
+  },
+
+  // Handle editing personnel
+  async editPersonnel(
+    id: string,
+    updatedData: Partial<FormDataProps>
+  ): Promise<{
+    success: boolean;
+    error: string | null;
+  }> {
+    try {
+      const userRef = doc(database, "Users", id);
+
+      await setDoc(userRef, updatedData, { merge: true });
+
+      return {
+        success: true,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error("Error updating personnel:", error);
+      return { success: false, error: error.message };
     }
   },
 };

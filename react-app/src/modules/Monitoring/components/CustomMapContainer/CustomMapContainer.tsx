@@ -36,7 +36,6 @@ const FitBounds = ({ markers }: { markers: any[] }) => {
   return null;
 };
 
-
 interface CustomMapContainerProps {
   loading: boolean;
   policeHQ: PoliceHQ;
@@ -45,22 +44,29 @@ interface CustomMapContainerProps {
   allMarkers: any[];
 }
 
-const CustomMapContainer: React.FC<CustomMapContainerProps> = ({loading, policeHQ, geofencePolygon, filteredPersonnel, allMarkers}) => {
+const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
+  loading,
+  policeHQ,
+  geofencePolygon,
+  filteredPersonnel,
+  allMarkers,
+}) => {
   return (
     <div className="bg-white p-4 rounded-lg shadow flex-grow">
       {loading ? (
-        <div className="h-96 flex items-center justify-center bg-gray-100">
+        <div className="h-screen flex items-center justify-center bg-gray-100">
           <div className="flex flex-col items-center">
-            <RefreshCw className="animate-spin h-8 w-8 text-blue-600 mb-2" />
-            <p className="text-gray-600">Loading personnel data...</p>
+            <RefreshCw className="animate-spin h-12 w-12 text-blue-600 mb-4" />
+            <p className="text-gray-600 text-lg">Loading map data...</p>
           </div>
         </div>
       ) : (
-        <div className="h-96">
+        <div className="h-[500px]">
           <MapContainer
             center={[policeHQ.lat, policeHQ.lng]}
             zoom={15}
             style={{ height: "100%", width: "100%" }}
+            className="z-0"
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -72,9 +78,10 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({loading, policeH
               position={[policeHQ.lat, policeHQ.lng]}
               icon={createCustomIcon("#1e40af")}
             >
-              <Popup>
-                <div className="font-medium">{policeHQ.name}</div>
-                <div className="text-xs">{policeHQ.address}</div>
+              <Popup className="custom-popup">
+                <div className="font-medium text-lg">{policeHQ.name}</div>
+                <div className="text-sm">{policeHQ.address}</div>
+                <div className="mt-2 text-xs bg-blue-50 p-2 rounded">Headquarters</div>
               </Popup>
             </Marker>
 
@@ -84,12 +91,13 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({loading, policeH
                 color: "#3b82f6",
                 fillColor: "#3b82f6",
                 fillOpacity: 0.2,
+                weight: 3,
               }}
             >
               <Popup>
-                <div className="font-medium">{geofencePolygon.name}</div>
-                <div className="text-xs">
-                  Custom polygon area drawn from GeoJSON
+                <div className="font-medium text-lg">{geofencePolygon.name}</div>
+                <div className="text-sm">
+                  Custom patrol area with {geofencePolygon.coordinates.length} points
                 </div>
               </Popup>
             </Polygon>
@@ -101,12 +109,23 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({loading, policeH
                 position={[person.lat, person.lng]}
                 icon={createCustomIcon(getSectorColor(person.sector))}
               >
-                <Popup>
-                  <div className="font-medium">{person.name}</div>
-                  <div className="text-xs">ID: {person.id}</div>
-                  <div className="text-xs">Sector: {person.sector}</div>
-                  <div className="text-xs">
-                    Position: {person.lat}, {person.lng}
+                <Popup className="personnel-popup">
+                  <div className="font-medium text-lg">{person.name}</div>
+                  <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
+                    <div className="text-gray-500">ID:</div>
+                    <div>{person.id}</div>
+                    <div className="text-gray-500">Sector:</div>
+                    <div>{person.sector}</div>
+                    <div className="text-gray-500">Position:</div>
+                    <div>
+                      {person.lat.toFixed(5)}, {person.lng.toFixed(5)}
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between text-xs">
+                      <span>Status:</span>
+                      <span className="text-green-600 font-medium">Active</span>
+                    </div>
                   </div>
                 </Popup>
               </Marker>

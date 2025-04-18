@@ -34,8 +34,8 @@ export const GEO_FENCE_POLYGON: GeofencePolygon = {
 export const POLICE_HQ: PoliceHQ = {
   name: "Police Regional Office 10",
     address: "Camp 1Lt Vicente G. Alagar, Claro M. Recto Ave, Cagayan de Oro",
-    lat: 8.4859,
-    lng: 124.6574,
+    lat: 8.48104,
+    lng: 124.66092,
 }
 
 // Define sector colors
