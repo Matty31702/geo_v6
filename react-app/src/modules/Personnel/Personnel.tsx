@@ -252,9 +252,9 @@ const Personnel = () => {
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Sector
                     </th> */}
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Coordinates
-                    </th>
+                    </th> */}
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th> */}
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -295,17 +295,17 @@ const Personnel = () => {
                         {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {person.sector}
                         </td> */}
-                        <td className="px-4 py-3">
-                          {/* <div
+                        {/* <td className="px-4 py-3">
+                          <div
                             className="text-sm text-gray-900 truncate max-w-xs"
                             title={person.address}
                           >
                             {person.address}
-                          </div> */}
+                          </div>
                           <div className="text-xs text-gray-500">
                             {person.lat}, {person.lng}
                           </div>
-                        </td>
+                        </td> */}
                         {/* <td className="px-4 py-3 whitespace-nowrap">
                         {person.isVerified ? (
                           <span className="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

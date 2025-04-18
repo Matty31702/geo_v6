@@ -34,6 +34,7 @@ export interface Personnel {
   guardian_name: string;
   guardian_phone_number: string;
   birthday: string;
+  isLoggedIn: boolean;
 }
 
 export interface Vehicle {
