@@ -1,228 +1,243 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile/services/auth_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_mobile/services/location_service.dart';
+import 'package:flutter_mobile/models/geofence_model.dart';
+import 'package:flutter_mobile/widgets/status_bar.dart';
+import 'package:flutter_mobile/widgets/location_info.dart';
+import 'package:flutter_mobile/widgets/action_buttons.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart'
+    as fmctp;
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final AuthService authService = AuthService();
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  final AuthService _authService = AuthService();
+  final LocationService _locationService = LocationService();
+  final MapController _mapController = MapController();
+  final GeofenceModel _geofence = GeofenceModel();
+
+  bool _isLoading = true;
+  List<Marker> _markers = [];
+  List<Polygon> _polygons = [];
+  bool _isInsideGeofence = false;
+  String _statusMessage = "Checking location...";
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeServices();
+  }
+
+  @override
+  void dispose() {
+    _locationService.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      await _locationService.initializeLocationService();
+
+      _locationService.addLocationChangedListener((locationData, error) {
+        if (error != null) {
+          setState(() {
+            _statusMessage = "Location tracking error: $error";
+          });
+          return;
+        }
+
+        if (mounted && locationData != null) {
+          setState(() {
+            _isLoading = false;
+          });
+          _updateMarkers();
+          _checkIfInGeofence();
+        }
+      });
+
+      await _getCurrentLocation();
+      _setupGeofence();
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _statusMessage = "Service initialization failed: $e";
+      });
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      await _locationService.getCurrentLocation();
+      setState(() {
+        _isLoading = false;
+      });
+
+      _updateMarkers();
+      _checkIfInGeofence();
+
+      // Move map to current location
+      if (_locationService.currentLocation != null) {
+        _mapController.move(
+          LatLng(
+            _locationService.currentLocation!.latitude!,
+            _locationService.currentLocation!.longitude!,
+          ),
+          16,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _statusMessage = "Failed to get location: $e";
+      });
+    }
+  }
+
+  void _updateMarkers() {
+    if (_locationService.currentLocation != null) {
+      setState(() {
+        _markers = _locationService.getLocationMarkers(context);
+      });
+    }
+  }
+
+  void _setupGeofence() {
+    try {
+      setState(() {
+        _polygons = [_geofence.getGeofencePolygon()];
+      });
+    } catch (e) {
+      debugPrint("Error setting up geofence: $e");
+    }
+  }
+
+  void _checkIfInGeofence() {
+    if (_locationService.currentLocation == null) return;
+
+    final isInside = _geofence.isPointInGeofence(
+      LatLng(
+        _locationService.currentLocation!.latitude!,
+        _locationService.currentLocation!.longitude!,
+      ),
+    );
+
+    if (mounted) {
+      setState(() {
+        _isInsideGeofence = isInside;
+        _statusMessage =
+            isInside
+                ? "You are inside the designated area"
+                : "You are outside the designated area";
+      });
+    }
+  }
+
+  void _markAttendance() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              _isInsideGeofence ? Icons.check_circle : Icons.info_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _isInsideGeofence
+                  ? 'Attendance marked successfully'
+                  : 'Attendance marked (outside area)',
+            ),
+          ],
+        ),
+        backgroundColor: _isInsideGeofence ? Colors.green : Colors.orange,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Police Regional Office 10'),
         backgroundColor: const Color(0xFF0D47A1),
         centerTitle: true,
-        elevation: 0,
+        elevation: 4,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await authService.signOut();
+              await _authService.signOut();
             },
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFF0D47A1)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body:
+          _isLoading
+              ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Initializing location services...'),
+                  ],
+                ),
+              )
+              : Column(
                 children: [
-                  CircleAvatar(
-                    radius: 36,
-                    backgroundColor: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Image.asset(
-                        'assets/police_logo.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.security,
-                            size: 40,
-                            color: Color(0xFF0D47A1),
-                          );
-                        },
-                      ),
-                    ),
+                  // Status bar
+                  StatusBar(
+                    isInsideGeofence: _isInsideGeofence,
+                    statusMessage: _statusMessage,
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Admin Dashboard',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    FirebaseAuth.instance.currentUser?.email ?? 'Admin User',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Personnel'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.description),
-              title: const Text('Reports'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notifications'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () async {
-                await authService.signOut();
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: const Color(0xFF0D47A1),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.access_time, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Last login: ${DateTime.now().toString().substring(0, 16)}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildDashboardCard(
-                    context,
-                    Icons.people,
-                    'Personnel',
-                    '124',
-                    Colors.blue,
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    Icons.assignment,
-                    'Cases',
-                    '57',
-                    Colors.orange,
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    Icons.announcement,
-                    'Announcements',
-                    '12',
-                    Colors.green,
-                  ),
-                  _buildDashboardCard(
-                    context,
-                    Icons.event_note,
-                    'Events',
-                    '8',
-                    Colors.purple,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildDashboardCard(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String count,
-    Color color,
-  ) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                shape: BoxShape.circle,
+                  // Location details
+                  if (_locationService.currentLocation != null)
+                    LocationInfo(location: _locationService.currentLocation!),
+
+                  // Map view
+                  Expanded(
+                    child: FlutterMap(
+                      mapController: _mapController,
+                      options: MapOptions(
+                        initialCenter: GeofenceModel.policeHQ,
+                        initialZoom: 16,
+                        interactionOptions: const InteractionOptions(
+                          enableScrollWheel: true,
+                          enableMultiFingerGestureRace: true,
+                          flags: InteractiveFlag.all,
+                        ),
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.police.attendance',
+                          tileProvider: fmctp.CancellableNetworkTileProvider(),
+                        ),
+                        PolygonLayer(polygons: _polygons),
+                        MarkerLayer(markers: _markers),
+                      ],
+                    ),
+                  ),
+
+                  // Action buttons
+                  ActionButtons(
+                    isInsideGeofence: _isInsideGeofence,
+                    onUpdateLocation: _getCurrentLocation,
+                    onMarkAttendance: _markAttendance,
+                  ),
+                ],
               ),
-              child: Icon(icon, size: 32, color: color),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              count,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
