@@ -32,6 +32,7 @@ export interface Personnel {
   address: string;
   lng: number;
   guardian_name: string;
+  mark_number?: string;
   guardian_phone_number: string;
   birthday: string;
   isLoggedIn: boolean;
