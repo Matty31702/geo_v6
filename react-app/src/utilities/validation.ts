@@ -13,7 +13,7 @@ export interface UserFormData {
   confirmPassword: string;
   phone_number: string;
   address: string;
-  sector: string;
+  // sector: string;
   gender: string;
   username: string;
   birthday: string;
@@ -54,7 +54,7 @@ export const validateUserForm = (formData: UserFormData): string => {
     return "Passwords do not match";
   if (!formData.phone_number.trim()) return "Phone number is required";
   if (!formData.address.trim()) return "Address is required";
-  if (!formData.sector) return "Sector is required";
+  /* if (!formData.sector) return "Sector is required"; */
   if (!formData.gender) return "Gender is required";
   if (!formData.username) return "Personnel ID is required";
   if (!formData.birthday) return "Birthday is required";

@@ -1,8 +1,4 @@
-import { useState, useRef } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, database } from "../../../../../services/firebase/config";
-import { X, Plus, Upload, Loader2 } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { validateUserForm } from "../../../../../utilities/validation";
 import useFormData from "../../../../../components/hooks/useFormData";
 import usePersonnel from "../../../../../components/hooks/usePersonnel";
@@ -31,7 +27,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
       password: "",
       confirmPassword: "",
       address: "",
-      sector: "",
+      // sector: "",
       datetime: "",
       type: "",
       gender: "",
@@ -262,7 +258,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           </div>
 
           {/* Sector */}
-          <div className="col-span-full">
+          {/* <div className="col-span-full">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Sector *
             </label>
@@ -280,7 +276,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-6 flex justify-end space-x-3">

@@ -185,7 +185,7 @@ const Personnel = () => {
                 ))}
               </select>
             </div> */}
-              <div className="relative">
+              {/* <div className="relative">
                 <MapPin
                   size={20}
                   className="absolute left-3 top-2.5 text-gray-400"
@@ -202,7 +202,7 @@ const Personnel = () => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
               <div>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
@@ -249,9 +249,9 @@ const Personnel = () => {
                     </th>
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th> */}
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th> */}
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Sector
-                    </th>
+                    </th> */}
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Coordinates
                     </th>
@@ -292,9 +292,9 @@ const Personnel = () => {
                           {person.type}
                         </span>
                       </td> */}
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {person.sector}
-                        </td>
+                        </td> */}
                         <td className="px-4 py-3">
                           {/* <div
                             className="text-sm text-gray-900 truncate max-w-xs"
