@@ -18,7 +18,7 @@ export interface FormDataProps {
   latitude?: number;
   longitude?: number;
   profile?: string;
-  sector: string;
+  // sector: string;
   type?: string;
   gender: string;
   birthday: string;
@@ -26,6 +26,17 @@ export interface FormDataProps {
   password: string;
   guardian_name: string;
   guardian_phone_number: string;
+}
+
+export interface EditFormDataProps {
+  id: Personnel["id"];
+  name: Personnel["name"];
+  phone_number: Personnel["phone_number"];
+  gender: Personnel["gender"];
+  birthday: Personnel["birthday"];
+  address: Personnel["address"];
+  guardian_name: Personnel["guardian_name"];
+  guardian_phone_number: Personnel["guardian_phone_number"];
 }
 
 interface CustomUserCredential {
@@ -81,10 +92,33 @@ const personnelService = {
       // Add user to Firestore
       await setDoc(doc(database, "Users", user.uid), {
         ...formData,
-        type: "Personnel"
+        type: "Personnel",
       });
     } catch (error: any) {
       console.error(error);
+    }
+  },
+
+  // Handle editing personnel
+  async editPersonnel(
+    id: string,
+    updatedData: Partial<EditFormDataProps>
+  ): Promise<{
+    success: boolean;
+    error: string | null;
+  }> {
+    try {
+      const userRef = doc(database, "Users", id);
+
+      await setDoc(userRef, updatedData, { merge: true });
+
+      return {
+        success: true,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error("Error updating personnel:", error);
+      return { success: false, error: error.message };
     }
   },
 };

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { FirestoreResponse, Vehicle } from "../../types/firestore";
-import vehicleService from "../../services/vehicleService";
-import { FormDataProps } from "../../modules/Vehicle/components/AddVehicleModal/AddVehicleModal";
+import vehicleService, {
+  EditFormDataProps,
+} from "../../services/vehicleService";
+import { FormDataProps } from "../../modules/Vehicle/components/forms/AddVehicleModal/AddVehicleModal";
 
 const useVehicle = () => {
   // Use loading
@@ -9,6 +11,19 @@ const useVehicle = () => {
   const [vehicles, setVehicles] = useState<any[]>([]);
 
   const [error, setError] = useState<string>("");
+
+  // Select state
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+
+  // Handle select vehicle
+  const handleSelectVehicle = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+  };
+
+  // Handle unselect vehicle
+  const handleUnselectVehicle = () => {
+    setSelectedVehicle(null);
+  };
 
   /**
    * Async functions
@@ -51,13 +66,41 @@ const useVehicle = () => {
     }
   };
 
+  // Handle editing vehicle
+  const editVehicle = async (
+    id: Vehicle["id"],
+    updatedData: EditFormDataProps
+  ) => {
+    // Set loading
+    setLoading(true);
+
+    try {
+      await vehicleService.editVehicle(id, updatedData);
+
+      return {
+        success: true,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error(error);
+
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     vehicles,
     error,
+    selectedVehicle,
+    handleSelectVehicle,
+    handleUnselectVehicle,
     setError,
     addVehicle,
     getAllVehicles,
+    editVehicle,
   };
 };
 
