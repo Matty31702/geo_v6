@@ -2,8 +2,8 @@ import { Plus, Loader2 } from "lucide-react";
 import { validateUserForm } from "../../../../../utilities/validation";
 import useFormData from "../../../../../components/hooks/useFormData";
 import usePersonnel from "../../../../../components/hooks/usePersonnel";
-import FormContainer from "../FormContainer";
-import FormHeader from "../FormHeader";
+import FormContainer from "../../../../../components/_forms/FormContainer";
+import FormHeader from "../../../../../components/_forms/FormHeader";
 
 interface AddUserModalProps {
   isOpen: boolean;

@@ -92,7 +92,7 @@ const Personnel = () => {
     showToast.success("Successfully created a new personnel!");
   };
 
-  // Handle successful user addition
+  // Handle successful user edit
   const handleUserEdited = () => {
     // Refresh the personnel list
     getAllPersonnels();

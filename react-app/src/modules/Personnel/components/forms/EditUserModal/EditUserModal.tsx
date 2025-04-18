@@ -1,13 +1,12 @@
 import React from "react";
 import { Personnel } from "../../../../../types/firestore";
 import useFormData from "../../../../../components/hooks/useFormData";
-import FormContainer from "../FormContainer";
-import FormHeader from "../FormHeader";
+import FormContainer from "../../../../../components/_forms/FormContainer";
+import FormHeader from "../../../../../components/_forms/FormHeader";
 import usePersonnel from "../../../../../components/hooks/usePersonnel";
 import { Edit, Loader2 } from "lucide-react";
 import {
   validateEditUserForm,
-  validateUserForm,
 } from "../../../../../utilities/validation";
 
 interface EditUserModalProps {

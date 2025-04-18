@@ -5,12 +5,21 @@ import useVehicle from "../../components/hooks/useVehicle";
 import { PenTool, Plus, RefreshCw, Search } from "lucide-react";
 import type { Vehicle } from "../../types/firestore";
 import PaginationControl from "../../components/paginations/PaginationControl";
-import AddVehicleModal from "./components/AddVehicleModal";
+import AddVehicleModal from "./components/forms/AddVehicleModal";
 import showToast from "../../utilities/toast";
+import EditVehicleModal from "./components/forms/EditVehicleModal";
 
 const Vehicle = () => {
   // Use vehicle
-  const { vehicles, error, loading, getAllVehicles } = useVehicle();
+  const {
+    vehicles,
+    error,
+    loading,
+    selectedVehicle,
+    handleSelectVehicle,
+    handleUnselectVehicle,
+    getAllVehicles,
+  } = useVehicle();
 
   // Other states
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -18,6 +27,7 @@ const Vehicle = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterType, setFilterType] = useState<string>("");
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
   const itemsPerPage = 10;
 
   // Get unique personnel types and sectors for filters
@@ -36,6 +46,14 @@ const Vehicle = () => {
     getAllVehicles();
     // Show success message or notification if needed
     showToast.success("Successfully created a new vehicle!");
+  };
+
+  // Handle successful vehicle edit
+  const handleUserEdited = () => {
+    // Refresh the vehicle list
+    getAllVehicles();
+    // Show success message or notification if needed
+    showToast.success("Successfully edited a vehicle!");
   };
 
   // Filter vehicle based on search and filers
@@ -178,8 +196,11 @@ const Vehicle = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Plate Number
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Assigned Personnel
+                    </th> */}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
                     </th>
                   </tr>
                 </thead>
@@ -214,8 +235,19 @@ const Vehicle = () => {
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {vehicle.plate_number}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {vehicle.user_id}
+                        </td> */}
+                        <td className="px-4 py-3 space-x-3 text-sm text-center">
+                          <button
+                            onClick={() => {
+                              setIsEditModalOpen(true);
+                              handleSelectVehicle(vehicle);
+                            }}
+                            className="text-gray-600 hover:text-gray-800"
+                          >
+                            Edit
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -241,6 +273,18 @@ const Vehicle = () => {
         onClose={() => setIsAddModalOpen(false)}
         onVehicleAdded={handleVehicleAdd}
       />
+
+      {selectedVehicle && (
+        <EditVehicleModal
+          selectedVehicle={selectedVehicle}
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            handleUnselectVehicle();
+            setIsEditModalOpen(false);
+          }}
+          onVehicleEdited={handleUserEdited}
+        />
+      )}
     </>
   );
 };
