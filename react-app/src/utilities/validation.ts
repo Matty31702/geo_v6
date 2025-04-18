@@ -1,3 +1,5 @@
+import { EditFormDataProps } from "../services/personnelService";
+
 export interface VehicleFormData {
   color: string;
   model: string;
@@ -28,7 +30,20 @@ export const validateVehicleForm = (formData: VehicleFormData): string => {
   return "";
 };
 
-// Validate user form
+// Validate user form (put method)
+export const validateEditUserForm = (formData: EditFormDataProps): string => {
+  if (!formData.name.trim()) return "Name is required";
+  if (!formData.phone_number.trim()) return "Phone number is required";
+  if (!formData.address.trim()) return "Address is required";
+  if (!formData.gender) return "Gender is required";
+  if (!formData.guardian_name) return "Guardian name is required";
+  if (!formData.guardian_phone_number) return "Guardian phone number is required";
+  if (!formData.birthday) return "Birthday is required";
+
+  return "";
+}
+
+// Validate user form (post method)
 export const validateUserForm = (formData: UserFormData): string => {
   if (!formData.name.trim()) return "Name is required";
   if (!formData.email.trim()) return "Email is required";

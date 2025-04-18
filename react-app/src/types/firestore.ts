@@ -18,7 +18,8 @@ export interface Personnel {
   id: string;
   sector: string;
   profile: string;
-  number: string;
+  phone_number: string;
+  gender: string;
   email: string;
   isVerified: boolean;
   type: string;
@@ -29,7 +30,10 @@ export interface Personnel {
     nanoseconds: number;
   },
   address: string;
-  lng: number
+  lng: number;
+  guardian_name: string;
+  guardian_phone_number: string;
+  birthday: string;
 }
 
 export interface Vehicle {

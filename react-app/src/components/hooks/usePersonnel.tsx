@@ -1,15 +1,25 @@
 import { useState } from "react";
 import { FirestoreResponse, Personnel } from "../../types/firestore";
 import personnelService, {
+  EditFormDataProps,
   FormDataProps,
 } from "../../services/personnelService";
 
+// Use personnel hook
 const usePersonnel = () => {
   // Use Loading
   const [loading, setLoading] = useState<boolean>(false);
   const [personnels, setPersonnels] = useState<Personnel[]>([]);
 
   const [error, setError] = useState<string>("");
+
+  // Select state
+  const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | null>(null);
+
+  // Handling select personnel
+  const handleSelectPersonnel = (personnel: Personnel) => {
+    setSelectedPersonnel(personnel);
+  }
 
   // Async functions
   const getAllPersonnels = async () => {
@@ -60,13 +70,44 @@ const usePersonnel = () => {
     }
   };
 
+  // Handle editing personnel
+  const editPersonnel = async (
+    id: Personnel["id"],
+    updatedData: EditFormDataProps
+  ): Promise<{
+    success: boolean;
+    error: string | null;
+  }> => {
+    // Set loading
+    setLoading(true);
+
+    try {
+      await personnelService.editPersonnel(id, updatedData);
+
+      return {
+        success: true,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error(error);
+
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     personnels,
+    selectedPersonnel,
     error,
     addPersonnel,
+    setSelectedPersonnel,
     setError,
     getAllPersonnels,
+    editPersonnel,
+    handleSelectPersonnel,
   };
 };
 

@@ -28,6 +28,17 @@ export interface FormDataProps {
   guardian_phone_number: string;
 }
 
+export interface EditFormDataProps {
+  id: Personnel['id'],
+  name: Personnel['name'];
+  phone_number: Personnel['phone_number'];
+  gender: Personnel['gender'];
+  birthday: Personnel['birthday'];
+  address: Personnel['address'];
+  guardian_name: Personnel['guardian_name'];
+  guardian_phone_number: Personnel['guardian_phone_number'];
+}
+
 interface CustomUserCredential {
   data: UserCredential | null;
   error: string | null;
@@ -91,7 +102,7 @@ const personnelService = {
   // Handle editing personnel
   async editPersonnel(
     id: string,
-    updatedData: Partial<FormDataProps>
+    updatedData: Partial<EditFormDataProps>
   ): Promise<{
     success: boolean;
     error: string | null;

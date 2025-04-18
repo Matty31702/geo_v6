@@ -3,17 +3,27 @@ import usePersonnel from "../../components/hooks/usePersonnel";
 import { Search, RefreshCw, MapPin, Plus } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
-import AddUserModal from "./components/AddUserModal";
+import AddUserModal from "./components/forms/AddUserModal";
 import showToast from "../../utilities/toast";
 import PaginationControl from "../../components/paginations/PaginationControl";
+import EditUserModal from "./components/forms/EditUserModal";
 
 const Personnel = () => {
-  const { loading, error, personnels, getAllPersonnels } = usePersonnel();
+  const {
+    loading,
+    error,
+    personnels,
+    selectedPersonnel,
+    handleSelectPersonnel,
+    getAllPersonnels,
+    setSelectedPersonnel,
+  } = usePersonnel();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterSector, setFilterSector] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // State for modal visibility
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -40,7 +50,7 @@ const Personnel = () => {
         !searchTerm ||
         person.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.number?.includes(searchTerm);
+        person.phone_number?.includes(searchTerm);
 
       const matchesType = !filterType || person.type === filterType;
       const matchesSector = !filterSector || person.sector === filterSector;
@@ -68,7 +78,7 @@ const Personnel = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-   
+
   // Handle refresh function
   const handleRefresh = () => {
     getAllPersonnels();
@@ -80,6 +90,14 @@ const Personnel = () => {
     getAllPersonnels();
     // Show success message or notification if needed
     showToast.success("Successfully created a new personnel!");
+  };
+
+  // Handle successful user addition
+  const handleUserEdited = () => {
+    // Refresh the personnel list
+    getAllPersonnels();
+    // Show success message or notification if needed
+    showToast.success("Successfully edited a personnel!");
   };
 
   /* const exportToCSV = () => {
@@ -239,7 +257,9 @@ const Personnel = () => {
                     </th>
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
                     {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th> */}
-                    {/* <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th> */}
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -303,17 +323,20 @@ const Personnel = () => {
                           {new Date(person.dateTime.seconds * 1000).toLocaleTimeString()}
                         </div>
                       </td> */}
-                        {/* <td className="px-4 py-3 space-x-3 text-sm text-center">
-                        <button className="text-blue-600 hover:text-blue-800">
-                          View
-                        </button>
-                        <button className="text-gray-600 hover:text-gray-800">
-                          Edit
-                        </button>
-                        <button className="text-red-600 hover:text-red-800">
-                          Delete
-                        </button>
-                      </td> */}
+                        <td className="px-4 py-3 space-x-3 text-sm text-center">
+                          <button
+                            onClick={() => {
+                              setIsEditModalOpen(true);
+                              handleSelectPersonnel(person);
+                            }}
+                            className="text-gray-600 hover:text-gray-800"
+                          >
+                            Edit
+                          </button>
+                          {/* <button className="text-red-600 hover:text-red-800">
+                            Delete
+                          </button> */}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -338,6 +361,18 @@ const Personnel = () => {
         onClose={() => setIsAddModalOpen(false)}
         onUserAdded={handleUserAdded}
       />
+
+      {selectedPersonnel && (
+        <EditUserModal
+          selectedPersonnel={selectedPersonnel}
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setSelectedPersonnel(null);
+            setIsEditModalOpen(false)
+          }}
+          onUserEdited={handleUserEdited}
+        />
+      )}
     </>
   );
 };
