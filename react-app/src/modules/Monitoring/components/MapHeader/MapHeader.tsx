@@ -1,23 +1,14 @@
 import { RefreshCw, Shield } from "lucide-react";
-import React, { Dispatch, SetStateAction } from "react";
 
 interface MapHeaderProps {
   loading: boolean;
   refreshing: boolean;
-  selectedSector: string;
-  sectors: string[];
-  sectorCounts: any;
   handleRefresh: () => void;
-  setSelectedSector: Dispatch<SetStateAction<string>>;
 }
 
 const MapHeader: React.FC<MapHeaderProps> = ({
   loading,
   refreshing,
-  selectedSector,
-  sectors,
-  sectorCounts,
-  setSelectedSector,
   handleRefresh,
 }) => {
   return (
@@ -39,7 +30,7 @@ const MapHeader: React.FC<MapHeaderProps> = ({
           />
           <span>{loading || refreshing ? "Refreshing..." : "Refresh"}</span>
         </button>
-        <div className="flex items-center">
+        {/* <div className="flex items-center">
           <span className="mr-2 text-gray-700">Filter by Sector:</span>
           <select
             className="bg-white border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -53,7 +44,7 @@ const MapHeader: React.FC<MapHeaderProps> = ({
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
       </div>
     </div>
   );

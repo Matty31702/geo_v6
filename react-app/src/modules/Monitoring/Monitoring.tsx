@@ -11,14 +11,12 @@ import {
 import { Personnel } from "../../types/firestore";
 import MapHeader from "./components/MapHeader";
 import CustomMapContainer from "./components/CustomMapContainer";
-import PersonnelList from "./components/PersonnelList";
 import MapLegendContainer from "./components/MapLegendContainer";
 import CustomHelmet from "../../components/CustomHelmet";
 
 const Monitoring = () => {
   // Use custom hook to get personnel data
-  const { personnels, loading, error, getAllPersonnels } = usePersonnel();
-  const [selectedSector, setSelectedSector] = useState("all");
+  const { personnels, loading, getAllPersonnels } = usePersonnel();
   const [refreshing, setRefreshing] = useState(false);
 
   // Refresh personnel data
@@ -34,6 +32,15 @@ const Monitoring = () => {
     getAllPersonnels();
   }, []);
 
+  // Print Hello World every 5 seconds
+useEffect(() => {
+  const interval = setInterval(() => {
+    console.log("Hello World");
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, []);
+
   // Police HQ coordinates
   const policeHQ = POLICE_HQ;
 
@@ -45,19 +52,7 @@ const Monitoring = () => {
   const validPersonnel: Personnel[] = getValidPersonnel(personnels);
 
   // Filter based on selected sector
-  const filteredPersonnel =
-    selectedSector === "all"
-      ? validPersonnel
-      : validPersonnel.filter((p) => p.sector === selectedSector);
-
-  // Count personnel by sector
-  const sectorCounts = validPersonnel.reduce((acc: any, p: any) => {
-    acc[p.sector] = (acc[p.sector] || 0) + 1;
-    return acc;
-  }, {});
-
-  // Get unique sectors
-  const sectors = [...new Set(validPersonnel.map((p) => p.sector))].sort();
+  const filteredPersonnel = validPersonnel;
 
   // Prepare markers for map bounds calculation
   // Convert geofencePolygon to a format similar to other markers for bounds calculation
@@ -82,41 +77,37 @@ const Monitoring = () => {
       <CustomHelmet title="Monitoring | Geobound" />
 
       <div className="flex flex-col bg-gray-100 p-4 rounded-lg shadow-lg w-full max-w-6xl mx-auto">
-      <MapHeader
-        loading={loading}
-        refreshing={refreshing}
-        selectedSector={selectedSector}
-        sectors={sectors}
-        sectorCounts={sectorCounts}
-        handleRefresh={handleRefresh}
-        setSelectedSector={setSelectedSector}
-      />
-
-      <div className="flex">
-        {/* Map Container */}
-        <CustomMapContainer
+        <MapHeader
           loading={loading}
-          policeHQ={policeHQ}
-          geofencePolygon={geofencePolygon}
-          filteredPersonnel={filteredPersonnel}
-          allMarkers={allMarkers}
+          refreshing={refreshing}
+          handleRefresh={handleRefresh}
         />
-      </div>
 
-      <MapLegendContainer sectors={sectors} sectorCounts={sectorCounts} />
+        <div className="flex">
+          {/* Map Container */}
+          <CustomMapContainer
+            loading={loading}
+            policeHQ={policeHQ}
+            geofencePolygon={geofencePolygon}
+            filteredPersonnel={filteredPersonnel}
+            allMarkers={allMarkers}
+          />
+        </div>
 
-      <div className="mt-4 bg-white p-4 rounded-lg shadow text-xs text-gray-500">
-        <p>
-          Map displays {filteredPersonnel.length} out of {validPersonnel.length}{" "}
-          personnel with valid coordinates.
-        </p>
-        <p>
-          Custom geofence area defined with {geofencePolygon.coordinates.length}{" "}
-          points.
-        </p>
-        <p>Last updated: {new Date().toLocaleString()}</p>
+        <MapLegendContainer />
+
+        <div className="mt-4 bg-white p-4 rounded-lg shadow text-xs text-gray-500">
+          <p>
+            Map displays {filteredPersonnel.length} out of{" "}
+            {validPersonnel.length} personnel with valid coordinates.
+          </p>
+          <p>
+            Custom geofence area defined with{" "}
+            {geofencePolygon.coordinates.length} points.
+          </p>
+          <p>Last updated: {new Date().toLocaleString()}</p>
+        </div>
       </div>
-    </div>
     </>
   );
 };

@@ -1,16 +1,22 @@
 import { RefreshCw } from "lucide-react";
-import { MapContainer, Marker, Polygon, Popup, TileLayer, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Polygon,
+  Popup,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
 import { GeofencePolygon, PoliceHQ } from "../../types";
 import L from "leaflet";
 import { Personnel } from "../../../../types/firestore";
-import { getSectorColor } from "../../utilities/geofencing";
 import { useEffect } from "react";
 
 // Custom icon for HQ
 const createCustomIcon = (color: string) => {
   return L.divIcon({
     className: "custom-icon",
-    html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 12px; border: 2px solid white;"></div>`,
+    html: `<div style="background-color: ${color}; width: 11.5px; height: 11.5px; border-radius: 12px; border: 2px solid white;"></div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
     popupAnchor: [0, -12],
@@ -24,9 +30,9 @@ const FitBounds = ({ markers }: { markers: any[] }) => {
   useEffect(() => {
     // Filter out any markers without valid coordinates before creating bounds
     const validMarkers = markers.filter(
-      (m) => m && typeof m.lat === 'number' && typeof m.lng === 'number'
+      (m) => m && typeof m.lat === "number" && typeof m.lng === "number"
     );
-    
+
     if (validMarkers.length > 0) {
       const bounds = L.latLngBounds(validMarkers.map((m) => [m.lat, m.lng]));
       map.fitBounds(bounds, { padding: [50, 50] });
@@ -64,7 +70,7 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
         <div className="h-[500px]">
           <MapContainer
             center={[policeHQ.lat, policeHQ.lng]}
-            zoom={15}
+            zoom={25}
             style={{ height: "100%", width: "100%" }}
             className="z-0"
           >
@@ -76,12 +82,14 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
             {/* Police HQ Marker */}
             <Marker
               position={[policeHQ.lat, policeHQ.lng]}
-              icon={createCustomIcon("#1e40af")}
+              icon={createCustomIcon("#333399")}
             >
               <Popup className="custom-popup">
                 <div className="font-medium text-lg">{policeHQ.name}</div>
                 <div className="text-sm">{policeHQ.address}</div>
-                <div className="mt-2 text-xs bg-blue-50 p-2 rounded">Headquarters</div>
+                <div className="mt-2 text-xs bg-blue-50 p-2 rounded">
+                  Headquarters
+                </div>
               </Popup>
             </Marker>
 
@@ -95,41 +103,50 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
               }}
             >
               <Popup>
-                <div className="font-medium text-lg">{geofencePolygon.name}</div>
+                <div className="font-medium text-lg">
+                  {geofencePolygon.name}
+                </div>
                 <div className="text-sm">
-                  Custom patrol area with {geofencePolygon.coordinates.length} points
+                  Custom patrol area with {geofencePolygon.coordinates.length}{" "}
+                  points
                 </div>
               </Popup>
             </Polygon>
 
             {/* Personnel Markers */}
-            {filteredPersonnel.map((person) => (
-              <Marker
-                key={person.id}
-                position={[person.lat, person.lng]}
-                icon={createCustomIcon(getSectorColor(person.sector))}
-              >
-                <Popup className="personnel-popup">
-                  <div className="font-medium text-lg">{person.name}</div>
-                  <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
-                    <div className="text-gray-500">ID:</div>
-                    <div>{person.id}</div>
-                    <div className="text-gray-500">Sector:</div>
-                    <div>{person.sector}</div>
-                    <div className="text-gray-500">Position:</div>
-                    <div>
-                      {person.lat.toFixed(5)}, {person.lng.toFixed(5)}
+            {filteredPersonnel.map((person: Personnel) => {
+              if (!person.lat && !person.lng) {
+                return null;
+              }
+
+              return (
+                <Marker
+                  key={person.id}
+                  position={[person.lat, person.lng]}
+                  icon={createCustomIcon("#1e40af")}
+                >
+                  <Popup className="personnel-popup">
+                    <div className="font-medium text-lg">{person.name}</div>
+                    <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
+                      <div className="text-gray-500">ID:</div>
+                      <div>{person.id}</div>
+                      <div className="text-gray-500">Position:</div>
+                      <div>
+                        {person.lat.toFixed(5)}, {person.lng.toFixed(5)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-200">
-                    <div className="flex justify-between text-xs">
-                      <span>Status:</span>
-                      <span className="text-green-600 font-medium">Active</span>
+                    <div className="mt-3 pt-2 border-t border-gray-200">
+                      <div className="flex justify-between text-xs">
+                        <span>Status:</span>
+                        <span className="text-green-600 font-medium">
+                          Active
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+                  </Popup>
+                </Marker>
+              );
+            })}
 
             {/* Auto-fit map to bounds */}
             <FitBounds markers={allMarkers} />

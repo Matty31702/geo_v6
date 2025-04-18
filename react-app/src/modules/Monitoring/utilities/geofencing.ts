@@ -1,6 +1,5 @@
 // Prepare markers for map bounds calculation
 import { Personnel } from "../../../types/firestore";
-import { SECTOR_COLORS } from "../constants";
 import { GeofenceCenter, GeofencePolygon, PoliceHQ } from "../types";
 
 // Get only include valid markers
@@ -60,12 +59,4 @@ export const getValidPersonnel = (personnels: Personnel[]): Personnel[] => {
         typeof p.lng === "number"
     ) || []
   );
-};
-
-// Get color for sector
-export const getSectorColor = (sector: any) => {
-  // Define sector colors
-  const sectorColors: any = SECTOR_COLORS;
-
-  return sectorColors[sector] || "#6b7280";
 };

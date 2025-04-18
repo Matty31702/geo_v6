@@ -39,11 +39,11 @@ export const POLICE_HQ: PoliceHQ = {
 }
 
 // Define sector colors
-export const SECTOR_COLORS: any = {
+/* export const SECTOR_COLORS: any = {
   "1": "#3b82f6", // blue
   "2": "#ef4444", // red
   "3": "#10b981", // green
   "4": "#f59e0b", // amber
   "5": "#8b5cf6", // purple
   qwerqwer: "#6b7280", // gray
-};
+}; */

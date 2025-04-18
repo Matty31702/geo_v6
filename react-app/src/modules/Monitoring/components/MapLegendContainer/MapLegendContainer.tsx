@@ -1,14 +1,5 @@
-import React from "react";
-import { getSectorColor } from "../../utilities/geofencing";
 
-interface MapLegendContainerProps {
-  sectors: string[];
-  sectorCounts: any;
-}
-
-const MapLegendContainer: React.FC<MapLegendContainerProps> = ({
-  sectors,
-  sectorCounts,
+const MapLegendContainer = ({
 }) => {
   return (
     <div className="mt-4 flex bg-white p-4 rounded-lg shadow">
@@ -22,7 +13,7 @@ const MapLegendContainer: React.FC<MapLegendContainerProps> = ({
           <div className="w-4 h-4 rounded border-2 border-dashed border-blue-500 bg-blue-100 mr-2"></div>
           <span>Geofence Area</span>
         </div>
-        {sectors.map((sector) => (
+        {/* {sectors.map((sector) => (
           <div key={sector} className="flex items-center">
             <div
               className="w-4 h-4 rounded-full mr-2"
@@ -32,7 +23,7 @@ const MapLegendContainer: React.FC<MapLegendContainerProps> = ({
               Sector {sector} ({sectorCounts[sector] || 0})
             </span>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );
