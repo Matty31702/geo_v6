@@ -1,6 +1,6 @@
 import { Loader2, Plus, X } from "lucide-react";
 import useFormData from "../../../../components/hooks/useFormData";
-import { validateVehicleForm } from "../../../../utilities/Validation";
+import { validateVehicleForm } from "../../../../utilities/validation";
 import useVehicle from "../../../../components/hooks/useVehicle";
 
 interface AddVehicleModalProps {

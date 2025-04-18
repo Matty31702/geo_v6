@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { FirestoreResponse, Personnel } from "../../types/firestore";
-import personnelService from "../../services/personnelService";
+import personnelService, {
+  FormDataProps,
+} from "../../services/personnelService";
 
 const usePersonnel = () => {
   // Use Loading
@@ -17,7 +19,7 @@ const usePersonnel = () => {
     try {
       const personnels: FirestoreResponse<Personnel[]> =
         await personnelService.getAllPersonnels();
-      
+
       // Set state
       if (personnels.data) {
         // console.log(personnels.data);
@@ -33,10 +35,37 @@ const usePersonnel = () => {
     }
   };
 
+  // Add email and password
+  const addPersonnel = async (formData: FormDataProps) => {
+    // Set loading
+    setLoading(true);
+    setError("");
+
+    try {
+      // Create user in Firebase Authentication
+      const userCredential = await personnelService.addUserWithEmailAndPassword(
+        formData.email,
+        formData.password
+      );
+
+      // Return userCredential
+      if (userCredential.data?.user) {
+        await personnelService.addPersonnel(formData, userCredential.data.user);
+      }
+    } catch (error: any) {
+      console.error(error);
+      return error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     personnels,
     error,
+    addPersonnel,
+    setError,
     getAllPersonnels,
   };
 };

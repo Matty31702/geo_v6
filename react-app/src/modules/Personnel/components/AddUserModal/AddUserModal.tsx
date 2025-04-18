@@ -3,7 +3,9 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, database } from "../../../../services/firebase/config";
 import { X, Plus, Upload, Loader2 } from "lucide-react";
-import { validateUserForm } from "../../../../utilities/Validation";
+import { validateUserForm } from "../../../../utilities/validation";
+import useFormData from "../../../../components/hooks/useFormData";
+import usePersonnel from "../../../../components/hooks/usePersonnel";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -17,51 +19,35 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   onClose,
   onUserAdded,
 }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone_number: "",
-    address: "",
-    sector: "",
-    profile: "",
+  // Use form data
+  const {
+    formData,
+    reset,
+    handleChange,
+  } = useFormData({
+    initialValues: {
+      name: "",
+      username: "",
+      phone_number: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      address: "",
+      sector: "",
+      datetime: "",
+      type: "",
+      gender: "",
+      guardian_name: "",
+      guardian_phone_number: "",
+      birthday: "",
+    },
   });
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState("");
-  const [profileImage, setProfileImage] = useState(null);
-  const fileInputRef = useRef<any>(null);
+  // Use personnel data
+  const { loading, error, addPersonnel, setError } = usePersonnel();
 
   // List of available sectors
   const sectors = ["1", "2", "3", "4", "5"];
-
-  // Handle input changes
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Handle file input for profile image
-  const handleFileChange = (e: any) => {
-    if (e.target.files[0]) {
-      setProfileImage(e.target.files[0]);
-      // For now, just store the file name since we're not actually uploading
-      setFormData((prev) => ({
-        ...prev,
-        profile: e.target.files[0].name,
-      }));
-    }
-  };
-
-  // Trigger file input click
-  const handleProfileClick = () => {
-    fileInputRef.current.click();
-  };
 
   // Handle form submission
   const handleSubmit = async (e: any) => {
@@ -73,51 +59,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
       return;
     }
 
-    setLoading(true);
-    setError("");
-
     try {
-      // Create user in Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-
-      const user = userCredential.user;
-
-      // Create user document in Firestore
-      const userData = {
-        id: user.uid,
-        name: formData.name,
-        email: formData.email,
-        number: formData.phone_number,
-        address: formData.address,
-        dateTime: serverTimestamp(),
-        isVerified: false,
-        lat: 0, // Default values
-        lng: 0, // Default values
-        profile: formData.profile || "",
-        sector: formData.sector,
-        type: "Personnel", // Default type
-      };
-
-      // Add user to Firestore
-      await setDoc(doc(database, "Users", user.uid), userData);
+      await addPersonnel(formData);
 
       // Reset form and close modal
-      setFormData({
-        name: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        phone_number: "",
-        address: "",
-        sector: "",
-        profile: "",
-      });
-      setProfileImage(null);
+      reset();
 
       // Notify parent component of success
       if (onUserAdded) onUserAdded();
@@ -126,8 +72,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     } catch (err: any) {
       console.error("Error adding user:", err);
       setError(err.message || "Failed to create user");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -156,35 +100,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Profile Image */}
-            <div className="col-span-full flex justify-center mb-4">
-              <div
-                onClick={handleProfileClick}
-                className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-full flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
-              >
-                {profileImage ? (
-                  <div className="w-full h-full rounded-full overflow-hidden">
-                    <img
-                      src={URL.createObjectURL(profileImage)}
-                      alt="Profile preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <Upload size={24} className="text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">Upload photo</span>
-                  </>
-                )}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-              </div>
-            </div>
 
             {/* Name */}
             <div className="col-span-full md:col-span-1">
@@ -202,10 +117,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               />
             </div>
 
-            {/* Username */}
+            {/* Username/Personnel ID */}
             <div className="col-span-full md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username
+                Personnel ID
               </label>
               <input
                 type="text"
@@ -213,7 +128,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 value={formData.username}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter username"
+                placeholder="Enter personnel ID"
               />
             </div>
 
@@ -281,6 +196,42 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               />
             </div>
 
+            {/* Gender */}
+            <div className="col-span-full md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Gender *
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="" disabled>Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+
+            {/* Birthday */}
+            <div className="col-span-full md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Birthday *
+              </label>
+              <input
+                type="date"
+                name="birthday"
+                value={formData.birthday}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter birthday"
+                required
+              />
+            </div>
+
             {/* Address */}
             <div className="col-span-full">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -296,6 +247,40 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 required
               />
             </div>
+
+            {/* Guardian name */}
+            <div className="col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Guardian Name *
+              </label>
+              <input
+                type="text"
+                name="guardian_name"
+                value={formData.guardian_name}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter guardian name"
+                required
+              />
+            </div>
+
+            {/* Guardian phone number */}
+            <div className="col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Guardian Phone Number *
+              </label>
+              <input
+                type="text"
+                name="guardian_phone_number"
+                value={formData.guardian_phone_number}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter guardian phone number"
+                required
+              />
+            </div>
+
+            
 
             {/* Sector */}
             <div className="col-span-full">
