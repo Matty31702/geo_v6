@@ -7,6 +7,7 @@ const pageTitles: any = {
   '/personnels': 'Personnel Management',
   '/vehicles': 'Vehicle Management',
   '/monitoring': 'Monitoring personnels and vehicles',
+  '/activities': 'Logged Entry/Exit',
   // Add more routes as needed
 };
 

@@ -94,7 +94,7 @@ const Sidebar = () => {
                 isExpanded={sidebarOpen}
               />
               <NavButton
-                to="/logged-entries-and-exit"
+                to="/activities"
                 icon={<LogIn size={20} />}
                 text="Logged Entry/Exit"
                 isExpanded={sidebarOpen}
