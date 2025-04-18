@@ -12,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _idController = TextEditingController();
+  final _personnelIDController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -21,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _idController.dispose();
+    _personnelIDController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -40,13 +40,25 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        await _authService.signInWithEmailAndPassword(
-          _idController.text.trim(),
+        await _authService.signInWithPersonnelID(
+          _personnelIDController.text.trim(),
           _passwordController.text,
         );
       } on FirebaseAuthException catch (e) {
         setState(() {
-          _errorMessage = e.message ?? 'An error occurred during login';
+          switch (e.code) {
+            case 'user-not-found':
+              _errorMessage = 'Invalid personnel ID';
+              break;
+            case 'wrong-password':
+              _errorMessage = 'Invalid password';
+              break;
+            case 'too-many-requests':
+              _errorMessage = 'Too many login attempts. Try again later';
+              break;
+            default:
+              _errorMessage = e.message ?? 'An error occurred during login';
+          }
         });
       } catch (e) {
         setState(() {
@@ -139,8 +151,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
-                          controller: _idController,
-                          keyboardType: TextInputType.emailAddress,
+                          controller: _personnelIDController,
+                          keyboardType: TextInputType.text,
                           decoration: InputDecoration(
                             hintText: 'Enter your Personnel ID',
                             filled: true,
