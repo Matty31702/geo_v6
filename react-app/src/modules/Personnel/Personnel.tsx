@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import usePersonnel from "../../components/hooks/usePersonnel";
-import { Search, RefreshCw, MapPin, Plus } from "lucide-react";
+import { Search, RefreshCw, Plus } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import AddUserModal from "./components/forms/AddUserModal";
@@ -19,8 +19,8 @@ const Personnel = () => {
     setSelectedPersonnel,
   } = usePersonnel();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("");
-  const [filterSector, setFilterSector] = useState("");
+  // const [filterType, setFilterType] = useState("");
+  // const [filterSector, setFilterSector] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
@@ -33,15 +33,15 @@ const Personnel = () => {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterType, filterSector]);
+  }, [searchTerm]);
 
   // Get unique personnel types and sectors for filters
-  const personTypes = [
+  /* const personTypes = [
     ...new Set(personnels?.map((person) => person.type) || []),
   ];
   const sectors = [
     ...new Set(personnels?.map((person) => person.sector) || []),
-  ];
+  ]; */
 
   // Filter personnel based on search and filters
   const filteredPersonnel =
@@ -52,16 +52,17 @@ const Personnel = () => {
         person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.phone_number?.includes(searchTerm);
 
-      const matchesType = !filterType || person.type === filterType;
-      const matchesSector = !filterSector || person.sector === filterSector;
+      //const matchesType = !filterType || person.type === filterType;
+      // const matchesSector = !filterSector || person.sector === filterSector;
 
-      return matchesSearch && matchesType && matchesSector;
+      /* return matchesSearch && matchesType && matchesSector; */
+      return matchesSearch;
     }) || [];
 
   // Summary statistics
   const totalPersonnel = personnels?.length || 0;
   const verifiedCount = personnels?.filter((p) => p.isVerified).length || 0;
-  const unverifiedCount = totalPersonnel - verifiedCount;
+  // const unverifiedCount = totalPersonnel - verifiedCount;
 
   // Calculate personnel counts by type
   const personnelByType: { [key: string]: number } = {};

@@ -89,9 +89,9 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
   const mapRef = useRef<L.Map | null>(null);
   
   // Get map reference when initialized
-  const whenCreated = (map: L.Map) => {
+  /* const whenCreated = (map: L.Map) => {
     mapRef.current = map;
-  };
+  }; */
 
   return (
     <div className="bg-white p-4 rounded-lg shadow flex-grow">

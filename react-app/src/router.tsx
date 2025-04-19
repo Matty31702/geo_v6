@@ -4,9 +4,9 @@ import Login from "./modules/Login";
 import DefaultLayout from "./layouts/DefaultLayout";
 import { auth } from "./services/firebase/config";
 import Personnel from "./modules/Personnel";
-import Vehicle from "./modules/Vehicle";
-import Monitoring from "./modules/Monitoring";
 import Activity from "./modules/Activity";
+import Vehicles from "./modules/Vehicles";
+import Monitoring from "./modules/Monitoring";
 
 // Authentication loader function
 const authLoader = async () => {
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
       },
       {
         path: "vehicles",
-        element: <Vehicle />,
+        element: <Vehicles />,
       },
       {
         path: "monitoring",

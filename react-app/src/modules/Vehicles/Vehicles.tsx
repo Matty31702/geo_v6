@@ -3,13 +3,13 @@ import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import useVehicle from "../../components/hooks/useVehicle";
 import { PenTool, Plus, RefreshCw, Search } from "lucide-react";
-import type { Vehicle } from "../../types/firestore";
+import { Vehicle } from "../../types/firestore";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import AddVehicleModal from "./components/forms/AddVehicleModal";
 import showToast from "../../utilities/toast";
 import EditVehicleModal from "./components/forms/EditVehicleModal";
 
-const Vehicle = () => {
+const Vehicles = () => {
   // Use vehicle
   const {
     vehicles,
@@ -25,7 +25,7 @@ const Vehicle = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterColor, setFilterColor] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [filterType, setFilterType] = useState<string>("");
+  // const [filterType, setFilterType] = useState<string>("");
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
   const itemsPerPage = 10;
@@ -88,7 +88,7 @@ const Vehicle = () => {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterType, searchTerm]);
+  }, [searchTerm, searchTerm]);
 
   return (
     <>
@@ -289,4 +289,4 @@ const Vehicle = () => {
   );
 };
 
-export default Vehicle;
+export default Vehicles;

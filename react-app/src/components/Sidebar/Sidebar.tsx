@@ -2,7 +2,6 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard,
   LogIn,
   Truck,
   Users,
@@ -13,6 +12,8 @@ import { NavLink } from "react-router-dom";
 const Sidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [isMobile, setIsMobile] = useState(false);
+
+  if(isMobile) {}
 
   // Toggle sidebar
   const toggleSidebar = () => {
