@@ -1,4 +1,5 @@
 // Prepare markers for map bounds calculation
+import { LatLngTuple } from "leaflet";
 import { Personnel } from "../../../types/firestore";
 import { GeofenceCenter, GeofencePolygon, PoliceHQ } from "../types";
 
@@ -59,4 +60,34 @@ export const getValidPersonnel = (personnels: Personnel[]): Personnel[] => {
         typeof p.lng === "number"
     ) || []
   );
+};
+
+
+
+/**
+ * Check if a point is inside a polygon using ray casting algorithm
+ * @param point - [lat, lng] coordinates
+ * @param polygon - Array of [lat, lng] coordinates
+ * @returns boolean - true if point is inside polygon
+ */
+export const isPointInPolygon = (
+  point: [number, number], 
+  polygon: LatLngTuple[],
+): boolean => {
+  const x = point[0];
+  const y = point[1];
+  
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0];
+    const yi = polygon[i][1];
+    const xj = polygon[j][0];
+    const yj = polygon[j][1];
+    
+    const intersect = ((yi > y) !== (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  
+  return inside;
 };

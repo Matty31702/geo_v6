@@ -34,6 +34,7 @@ export interface Personnel {
   guardian_name: string;
   mark_number?: string;
   guardian_phone_number: string;
+  last_location_update: string;
   birthday: string;
   isLoggedIn: boolean;
 }

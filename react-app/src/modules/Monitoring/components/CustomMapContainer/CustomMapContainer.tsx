@@ -3,11 +3,17 @@ import { MapContainer, Marker, Polygon, Popup, TileLayer, useMap } from "react-l
 import L from "leaflet";
 import { GeofencePolygon, PoliceHQ } from "../../types";
 import { Personnel } from "../../../../types/firestore";
+import { isPointInPolygon } from "../../utilities/geofencing";
 
 // Custom icon for personnel with mark numbers
-const createMarkedIcon = (isLoggedIn: boolean, markNumber: string) => {
-  const backgroundColor = isLoggedIn ? "#1e40af" : "#dc2626"; // Blue for logged in, Red for logged out
+const createMarkedIcon = (isLoggedIn: boolean, markNumber: string, isInsideGeofence: boolean) => {
+  // Blue for logged in, Red for logged out
+  const backgroundColor = isLoggedIn ? "#1e40af" : "#dc2626";
   const textColor = "#ffffff"; // White text for contrast
+  // Add thicker border for personnel outside geofence
+  const borderStyle = isInsideGeofence 
+    ? "border: 2px solid white;" 
+    : "border: 3px solid yellow;";
   
   return L.divIcon({
     className: "custom-marker-icon",
@@ -23,7 +29,7 @@ const createMarkedIcon = (isLoggedIn: boolean, markNumber: string) => {
         justify-content: center; 
         font-size: 12px; 
         font-weight: bold;
-        border: 2px solid white;
+        ${borderStyle}
         box-shadow: 0 1px 3px rgba(0,0,0,0.3);
       ">${markNumber}</div>
     `,
@@ -144,6 +150,12 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
               return null;
             }
 
+            // Check if person is inside geofence
+            const isInside = isPointInPolygon(
+              [person.lat, person.lng],
+              geofencePolygon.coordinates
+            );
+
             // Use mark_number for the marker icon, fallback to first letter of name if not available
             const markerText = person.mark_number || person.name.charAt(0);
 
@@ -151,7 +163,7 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
               <Marker
                 key={person.id}
                 position={[person.lat, person.lng]}
-                icon={createMarkedIcon(person.isLoggedIn, markerText)}
+                icon={createMarkedIcon(person.isLoggedIn, markerText, isInside)}
               >
                 <Popup className="personnel-popup">
                   <div className="font-medium text-lg">{person.name}</div>
@@ -164,6 +176,16 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
                     <div>
                       {person.lat.toFixed(5)}, {person.lng.toFixed(5)}
                     </div>
+                    <div className="text-gray-500">Location:</div>
+                    <div>
+                      {isInside ? (
+                        <span className="text-green-600">Inside Geofence</span>
+                      ) : (
+                        <span className="text-orange-500">Outside Geofence</span>
+                      )}
+                    </div>
+                    <div className="text-gray-500">Last Updated:</div>
+                    <div>{person.last_location_update?.split('T')[0] || "N/A"}</div>
                   </div>
                   <div className="mt-3 pt-2 border-t border-gray-200">
                     <div className="flex justify-between text-xs">
