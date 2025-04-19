@@ -99,6 +99,43 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Update user login status in Firestore
+  Future<void> _updateUserLoginStatus(bool isLoggedIn) async {
+    try {
+      final userId = _authService.currentUser?.uid;
+      if (userId == null) return;
+
+      await _firestore.collection('Users').doc(userId).update({
+        'isLoggedIn': isLoggedIn,
+        'last_status_update': DateTime.now().toIso8601String(),
+      });
+
+      debugPrint("Updated user login status to: $isLoggedIn");
+    } catch (e) {
+      debugPrint("Error updating user login status: $e");
+    }
+  }
+
+  // Logout and update status in Firestore
+  Future<void> _logout() async {
+    try {
+      // First update the login status to false
+      await _updateUserLoginStatus(false);
+
+      // Then sign out from authentication
+      await _authService.signOut();
+    } catch (e) {
+      debugPrint("Error during logout: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Logout error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Update user location in Firestore
   Future<void> _updateUserLocation() async {
     final userId = _authService.currentUser?.uid;
     if (userId == null) return;
@@ -273,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'date_time': now.toIso8601String(),
         'lat': currentLocation.latitude, // Add latitude
         'lng': currentLocation.longitude, // Add longitude
+        'isLoggedIn': true,
       };
 
       // Check if record for today exists
@@ -376,7 +414,24 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('Logout'),
               onPressed: () async {
                 Navigator.of(context).pop();
-                await _authService.signOut();
+
+                // Show loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                );
+
+                // Call the logout function
+                await _logout();
+
+                // Close loading indicator (may not be necessary as auth state change
+                // will probably navigate away from this screen)
+                if (mounted) {
+                  Navigator.of(context).pop();
+                }
               },
             ),
           ],
