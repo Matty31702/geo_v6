@@ -34,7 +34,8 @@ dependencies:
   location: ^5.0.3
   geolocator: ^10.0.0
   flutter_polyline_points: 2.1.0
-  permission_handler: ^10.4.3
+  permission_handler: ^12.0.0+1
+  permission_handler_android: ^13.0.1
   provider: ^6.1.2
   flutter_dotenv: ^5.1.0
   flutter_map: ^6.1.0
@@ -46,10 +47,18 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_map_cancellable_tile_provider: ^1.0.0
+  rename: ^3.0.2
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/police_logo.png"
+  adaptive_icon_background: "#FF0D47A1" # For Android adaptive icons
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

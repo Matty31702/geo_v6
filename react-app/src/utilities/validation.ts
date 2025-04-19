@@ -19,6 +19,7 @@ export interface UserFormData {
   birthday: string;
   guardian_name: string;
   guardian_phone_number: string;
+  mark_number: string;
 }
 
 // Validate vehicle form
@@ -60,5 +61,6 @@ export const validateUserForm = (formData: UserFormData): string => {
   if (!formData.birthday) return "Birthday is required";
   if (!formData.guardian_name) return "Guardian name is required";
   if (!formData.guardian_phone_number) return "Guardian phone number is required";
+  if (!formData.mark_number) return "Mark Number is required";
   return "";
 };

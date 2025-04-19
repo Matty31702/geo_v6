@@ -8,6 +8,7 @@ import {
   getAllMarkers,
   getGeofenceCenter,
   getValidPersonnel,
+  isPointInPolygon,
 } from "./utilities/geofencing";
 import { Personnel } from "../../types/firestore";
 import MapHeader from "./components/MapHeader";
@@ -19,7 +20,8 @@ const Monitoring = () => {
   // Use custom hook to get personnel data
   const { personnels, getAllPersonnels } = usePersonnel();
   const [refreshing, setRefreshing] = useState(false);
-  const [authStatuses, setAuthStatuses] = useState<Record<string, boolean>>({});
+  const [personnelInGeofence, setPersonnelInGeofence] = useState(0);
+  const [personnelOutsideGeofence, setPersonnelOutsideGeofence] = useState(0);
   
   // Refresh personnel data without showing loading indicator
   const handleRefresh = () => {
@@ -34,25 +36,23 @@ const Monitoring = () => {
     getAllPersonnels();
   }, []);
 
-  // Monitor Firebase auth state for all users
+  // Monitor Firebase users directly from the Users collection
   useEffect(() => {
     if (!personnels.length) return;
     
     // Get Firestore instance
     const db = getFirestore();
     
-    // Set up auth state monitoring for personnel
+    // Set up monitoring for personnel
     const unsubscribes = personnels.map(person => {
-      // Reference to the user's document in Firestore
-      const userStatusRef = doc(db, 'userStatus', person.id);
+      // Reference to the user's document in Firestore (in Users collection)
+      const userRef = doc(db, 'Users', person.id);
       
-      return onSnapshot(userStatusRef, (docSnapshot) => {
+      return onSnapshot(userRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
-          const userData = docSnapshot.data();
-          setAuthStatuses(prev => ({
-            ...prev,
-            [person.id]: userData?.isOnline || false
-          }));
+          // This will automatically update the personnel data when it changes
+          // No need to store in separate state
+          // console.log(`User ${person.id} data updated from Firestore`);
         }
       });
     });
@@ -67,7 +67,7 @@ const Monitoring = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       getAllPersonnels();
-      console.log("Auto-refreshing personnel data");
+      // console.log("Auto-refreshing personnel data");
     }, 30000);
 
     return () => clearInterval(interval);
@@ -82,11 +82,32 @@ const Monitoring = () => {
   // Get valid personnel with coordinates
   const validPersonnel: Personnel[] = getValidPersonnel(personnels);
   
-  // Enhance personnel data with authentication status
-  const enhancedPersonnel = validPersonnel.map(person => ({
-    ...person,
-    isLoggedIn: authStatuses[person.id] || false
-  }));
+  // Calculate personnel inside/outside geofence
+  useEffect(() => {
+    if (validPersonnel.length > 0) {
+      let insideCount = 0;
+      let outsideCount = 0;
+      
+      validPersonnel.forEach(person => {
+        if (person.lat && person.lng) {
+          // Check if personnel is inside geofence
+          const isInside = isPointInPolygon(
+            [person.lat, person.lng],
+            geofencePolygon.coordinates
+          );
+          
+          if (isInside) {
+            insideCount++;
+          } else {
+            outsideCount++;
+          }
+        }
+      });
+      
+      setPersonnelInGeofence(insideCount);
+      setPersonnelOutsideGeofence(outsideCount);
+    }
+  }, [validPersonnel, geofencePolygon]);
 
   // Prepare markers for map bounds calculation
   const geofenceCenter: GeofenceCenter = getGeofenceCenter(geofencePolygon);
@@ -110,11 +131,11 @@ const Monitoring = () => {
         />
 
         <div className="flex">
-          {/* Map Container - removed loading prop */}
+          {/* Map Container - using valid personnel directly */}
           <CustomMapContainer
             policeHQ={policeHQ}
             geofencePolygon={geofencePolygon}
-            filteredPersonnel={enhancedPersonnel}
+            filteredPersonnel={validPersonnel}
             allMarkers={allMarkers}
           />
         </div>
@@ -131,15 +152,22 @@ const Monitoring = () => {
             <div className="w-3 h-3 rounded-full bg-red-600"></div>
             <span className="text-sm">Logged Out</span>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 border-3 border-yellow-400 rounded-full"></div>
+            <span className="text-sm">Outside Geofence</span>
+          </div>
         </div>
 
         <div className="mt-4 bg-white p-4 rounded-lg shadow text-xs text-gray-500">
           <p>
-            Map displays {enhancedPersonnel.length} out of{" "}
-            {validPersonnel.length} personnel with valid coordinates.
+            Map displays {validPersonnel.length} out of{" "}
+            {personnels.length} personnel with valid coordinates.
           </p>
           <p>
-            Online personnel: {enhancedPersonnel.filter(p => p.isLoggedIn).length}
+            Online personnel: {validPersonnel.filter(p => p.isLoggedIn).length}
+          </p>
+          <p>
+            Personnel inside geofence: {personnelInGeofence} | Outside geofence: {personnelOutsideGeofence}
           </p>
           <p>
             Custom geofence area defined with{" "}

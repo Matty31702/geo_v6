@@ -6,6 +6,7 @@ import {
   User,
   UserCredential,
 } from "firebase/auth";
+import omit from "../utilities/omit";
 
 export interface FormDataProps {
   id?: string;
@@ -24,8 +25,10 @@ export interface FormDataProps {
   birthday: string;
   username: string;
   password: string;
+  confirmPassword: string;
   guardian_name: string;
   guardian_phone_number: string;
+  mark_number: string;
 }
 
 export interface EditFormDataProps {
@@ -88,10 +91,14 @@ const personnelService = {
 
   // Handle adding new personnel
   async addPersonnel(formData: FormDataProps, user: User): Promise<void> {
+
+        // Omit password and confirmPassword
+        const filteredFormData = omit(formData, ["password", "confirmPassword"])
+
     try {
       // Add user to Firestore
       await setDoc(doc(database, "Users", user.uid), {
-        ...formData,
+        ...filteredFormData,
         type: "Personnel",
       });
     } catch (error: any) {
