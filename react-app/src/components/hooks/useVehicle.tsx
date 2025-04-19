@@ -3,7 +3,7 @@ import { FirestoreResponse, Vehicle } from "../../types/firestore";
 import vehicleService, {
   EditFormDataProps,
 } from "../../services/vehicleService";
-import { FormDataProps } from "../../modules/Vehicle/components/forms/AddVehicleModal/AddVehicleModal";
+import { FormDataProps } from "../../modules/Vehicles/components/forms/AddVehicleModal/AddVehicleModal";
 
 const useVehicle = () => {
   // Use loading

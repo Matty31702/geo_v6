@@ -1,7 +1,6 @@
 import { RefreshCw, Users } from "lucide-react";
 import React from "react";
 import { Personnel } from "../../../../types/firestore";
-import { getSectorColor } from "../../utilities/geofencing";
 
 interface PersonnelListProps {
   loading: boolean;
@@ -37,7 +36,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({
               <div className="flex items-center">
                 <div
                   className="w-3 h-3 rounded-full mr-2"
-                  style={{ backgroundColor: getSectorColor(person.sector) }}
+                 
                 />
                 <span className="text-sm font-medium">{person.name}</span>
               </div>

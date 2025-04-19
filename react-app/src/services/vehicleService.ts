@@ -1,7 +1,7 @@
 import { collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { FirestoreResponse, Vehicle } from "../types/firestore";
 import { database } from "./firebase/config";
-import { FormDataProps } from "../modules/Vehicle/components/forms/AddVehicleModal/AddVehicleModal";
+import { FormDataProps } from "../modules/Vehicles/components/forms/AddVehicleModal/AddVehicleModal";
 
 export interface EditFormDataProps {
   id: Vehicle["id"];

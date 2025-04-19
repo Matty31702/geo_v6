@@ -1,4 +1,4 @@
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import useFormData from "../../../../../components/hooks/useFormData";
 import { validateVehicleForm } from "../../../../../utilities/validation";
 import useVehicle from "../../../../../components/hooks/useVehicle";

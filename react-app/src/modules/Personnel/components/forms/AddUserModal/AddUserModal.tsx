@@ -42,9 +42,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   // Use personnel data
   const { loading, error, addPersonnel, setError } = usePersonnel();
 
-  // List of available sectors
-  const sectors = ["1", "2", "3", "4", "5"];
-
   // Handle form submission
   const handleSubmit = async (e: any) => {
     e.preventDefault();
