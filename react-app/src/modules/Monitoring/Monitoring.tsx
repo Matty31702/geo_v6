@@ -52,7 +52,7 @@ const Monitoring = () => {
         if (docSnapshot.exists()) {
           // This will automatically update the personnel data when it changes
           // No need to store in separate state
-          console.log(`User ${person.id} data updated from Firestore`);
+          // console.log(`User ${person.id} data updated from Firestore`);
         }
       });
     });
@@ -67,7 +67,7 @@ const Monitoring = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       getAllPersonnels();
-      console.log("Auto-refreshing personnel data");
+      // console.log("Auto-refreshing personnel data");
     }, 30000);
 
     return () => clearInterval(interval);

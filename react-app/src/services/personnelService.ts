@@ -28,6 +28,7 @@ export interface FormDataProps {
   confirmPassword: string;
   guardian_name: string;
   guardian_phone_number: string;
+  mark_number: string;
 }
 
 export interface EditFormDataProps {

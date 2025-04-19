@@ -24,6 +24,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
       name: "",
       username: "",
       phone_number: "",
+      mark_number: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -78,7 +79,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
       <form onSubmit={handleSubmit} className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Name */}
+          <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Name */}
           <div className="col-span-full md:col-span-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Full Name *
@@ -107,6 +109,22 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter personnel ID"
             />
+          </div>
+
+          {/*  Mark Number */}
+          <div className="col-span-full md:col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mark Number
+            </label>
+            <input
+              type="text"
+              name="mark_number"
+              value={formData.mark_number}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter 3-digit mark number"
+            />
+          </div>
           </div>
 
           {/* Email */}
