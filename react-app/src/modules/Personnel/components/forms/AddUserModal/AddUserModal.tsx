@@ -4,6 +4,7 @@ import useFormData from "../../../../../components/hooks/useFormData";
 import usePersonnel from "../../../../../components/hooks/usePersonnel";
 import FormContainer from "../../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../../components/_forms/FormHeader";
+import { FormDataProps } from "../../../../../services/personnelService";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   onUserAdded,
 }) => {
   // Use form data
-  const { formData, reset, handleChange } = useFormData({
+  const { formData, reset, handleChange } = useFormData<FormDataProps>({
     initialValues: {
       name: "",
       username: "",
