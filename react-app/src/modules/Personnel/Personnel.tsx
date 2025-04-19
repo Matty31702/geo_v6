@@ -61,7 +61,7 @@ const Personnel = () => {
 
   // Summary statistics
   const totalPersonnel = personnels?.length || 0;
-  const verifiedCount = personnels?.filter((p) => p.isVerified).length || 0;
+  // const verifiedCount = personnels?.filter((p) => p.isVerified).length || 0;
   // const unverifiedCount = totalPersonnel - verifiedCount;
 
   // Calculate personnel counts by type
