@@ -80,8 +80,8 @@ const Login = () => {
         return;
       }
 
-      // If successful, navigate to personnels
-      navigate("/personnels");
+      // If successful, navigate to dashboard
+      navigate("/dashboard");
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);

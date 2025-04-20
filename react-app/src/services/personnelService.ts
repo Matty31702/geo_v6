@@ -14,7 +14,7 @@ export interface FormDataProps {
   email: string;
   phone_number: string;
   address: string;
-  datetime: string;
+  datetime?: string;
   is_verified?: boolean;
   latitude?: number;
   longitude?: number;
