@@ -37,6 +37,7 @@ export interface Personnel {
   last_location_update: string;
   birthday: string;
   isLoggedIn: boolean;
+  vehicle?: Vehicle;
 }
 
 export interface Vehicle {
@@ -47,7 +48,8 @@ export interface Vehicle {
   model: string;
   color: string;
   plate_number: string;
-  user_id:string
+  user_id?:string;
+  user?: Personnel;
 }
 
 export interface Activity {

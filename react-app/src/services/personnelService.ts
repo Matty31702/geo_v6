@@ -1,5 +1,5 @@
 import { collection, doc, getDocs, setDoc } from "firebase/firestore";
-import { FirestoreResponse, Personnel } from "../types/firestore";
+import { FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
 import { auth, database } from "./firebase/config";
 import {
   createUserWithEmailAndPassword,
@@ -50,17 +50,36 @@ interface CustomUserCredential {
 // Personnel service
 const personnelService = {
   // Handle fetching all personnels
-  async getAllPersonnels(): Promise<FirestoreResponse<Personnel[]>> {
+  async getAllPersonnels(): Promise<
+    FirestoreResponse<(Personnel & { vehicle?: Vehicle })[]>
+  > {
     try {
-      const querySnapshot = await getDocs(collection(database, "Users"));
+      const usersSnapshot = await getDocs(collection(database, "Users"));
+      const vehiclesSnapshot = await getDocs(collection(database, "Vehicles"));
 
-      const users = querySnapshot.docs.map((doc) => ({
+      const vehicles: Vehicle[] = vehiclesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Vehicle, "id">),
+      }));
+
+      const users = usersSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...(doc.data() as Omit<Personnel, "id">),
       }));
 
-      // Filter to include only Personnel type
-      const personnels = users.filter((user) => user.type === "Personnel");
+      const personnels = users
+        .filter((user) => user.type === "Personnel")
+        .map((personnel) => {
+          const assignedVehicle = vehicles.find(
+            (v) => v.user_id === personnel.id
+          );
+          return {
+            ...personnel,
+            vehicle: assignedVehicle || undefined,
+          };
+        });
+
+      console.log(personnels);
 
       return { data: personnels, error: null };
     } catch (error: any) {
@@ -91,9 +110,8 @@ const personnelService = {
 
   // Handle adding new personnel
   async addPersonnel(formData: FormDataProps, user: User): Promise<void> {
-
-        // Omit password and confirmPassword
-        const filteredFormData = omit(formData, ["password", "confirmPassword"])
+    // Omit password and confirmPassword
+    const filteredFormData = omit(formData, ["password", "confirmPassword"]);
 
     try {
       // Add user to Firestore

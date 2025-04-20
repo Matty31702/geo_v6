@@ -204,7 +204,7 @@ const Personnel = () => {
                   ))}
                 </select>
               </div> */}
-              <div>
+              {/* <div>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
                   className="flex items-center gap-1 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 border border-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -212,7 +212,7 @@ const Personnel = () => {
                   <Plus size={18} />
                   Add New Personnel
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
