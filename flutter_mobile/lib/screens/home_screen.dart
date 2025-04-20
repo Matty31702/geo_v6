@@ -136,6 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Update user location in Firestore
+  // Update user location and any associated vehicle in Firestore
   Future<void> _updateUserLocation() async {
     final userId = _authService.currentUser?.uid;
     if (userId == null) return;
@@ -148,13 +149,37 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     try {
+      // Update user location
       await _firestore.collection('Users').doc(userId).update({
         'lat': currentLocation.latitude,
         'lng': currentLocation.longitude,
         'last_location_update': DateTime.now().toIso8601String(),
       });
+
+      // Check if user has an associated vehicle
+      final vehiclesSnapshot =
+          await _firestore
+              .collection('Vehicles')
+              .where('user_id', isEqualTo: userId)
+              .get();
+
+      // If vehicle exists, update its location
+      if (vehiclesSnapshot.docs.isNotEmpty) {
+        // Get the first vehicle associated with this user
+        // (assuming each user has at most one vehicle)
+        final vehicleDoc = vehiclesSnapshot.docs.first;
+
+        // Update vehicle location
+        await _firestore.collection('Vehicles').doc(vehicleDoc.id).update({
+          'lat': currentLocation.latitude,
+          'lng': currentLocation.longitude,
+          'last_location_update': DateTime.now().toIso8601String(),
+        });
+
+        debugPrint("Updated vehicle location for user: $userId");
+      }
     } catch (e) {
-      debugPrint("Error updating user location: $e");
+      debugPrint("Error updating location information: $e");
     }
   }
 
