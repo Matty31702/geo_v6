@@ -2,12 +2,14 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
+  LayoutDashboard,
   LogIn,
   Truck,
   Users,
 } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import LINKS from "../../constants/links";
 
 const Sidebar = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
@@ -76,32 +78,32 @@ const Sidebar = () => {
             }`}
           >
             <nav className="space-y-4">
-              {/* <NavButton
-              to="/dashboard"
+              <NavButton
+              to={LINKS.DASHBOARD}
                 icon={<LayoutDashboard size={20} />}
                 text="Dashboard"
                 isExpanded={sidebarOpen}
-              /> */}
+              />
               <NavButton
-                to="/personnels"
+                to={LINKS.PERSONNELS}
                 icon={<Users size={20} />}
                 text="Number of Personnel"
                 isExpanded={sidebarOpen}
               />
               <NavButton
-                to="/vehicles"
+                to={LINKS.VEHICLES}
                 icon={<Truck size={20} />}
                 text="Vehicles"
                 isExpanded={sidebarOpen}
               />
               <NavButton
-                to="/activities"
+                to={LINKS.ACTIVITIES}
                 icon={<LogIn size={20} />}
                 text="Logged Entry/Exit"
                 isExpanded={sidebarOpen}
               />
               <NavButton
-                to="/monitoring"
+                to={LINKS.MONITORING}
                 icon={<Activity size={20} />}
                 text="Monitor Realtime Status"
                 isExpanded={sidebarOpen}

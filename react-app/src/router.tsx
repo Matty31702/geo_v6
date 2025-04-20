@@ -7,6 +7,8 @@ import Personnel from "./modules/Personnel";
 import Activity from "./modules/Activity";
 import Vehicles from "./modules/Vehicles";
 import Monitoring from "./modules/Monitoring";
+import Dashboard from "./modules/Dashboard";
+import LINKS from "./constants/links";
 
 // Authentication loader function
 const authLoader = async () => {
@@ -15,7 +17,7 @@ const authLoader = async () => {
       unsubscribe();
       if (!user) {
         // If not logged in, redirect to login
-        return resolve(redirect("/login"));
+        return resolve(redirect(LINKS.LOGIN));
       }
       resolve(null);
     });
@@ -29,7 +31,7 @@ const guestLoader = async () => {
       unsubscribe();
       if (user) {
         // If logged in, redirect to dashboard
-        return resolve(redirect("/personnels"));
+        return resolve(redirect(LINKS.DASHBOARD));
       }
       resolve(null);
     });
@@ -45,22 +47,26 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/personnels" />,
+        element: <Navigate to={LINKS.DASHBOARD} />,
       },
       {
-        path: "personnels",
+        path: LINKS.DASHBOARD,
+        element: <Dashboard />,
+      },
+      {
+        path: LINKS.PERSONNELS,
         element: <Personnel />,
       },
       {
-        path: "vehicles",
+        path: LINKS.VEHICLES,
         element: <Vehicles />,
       },
       {
-        path: "monitoring",
+        path: LINKS.MONITORING,
         element: <Monitoring />
       },
       {
-        path: "activities",
+        path: LINKS.ACTIVITIES,
         element: <Activity />
       },
     ]
@@ -71,10 +77,10 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/login" />,
+        element: <Navigate to={LINKS.LOGIN} />,
       },
       {
-        path: "/login",
+        path: LINKS.LOGIN,
         element: <Login />,
         loader: guestLoader,
       },
