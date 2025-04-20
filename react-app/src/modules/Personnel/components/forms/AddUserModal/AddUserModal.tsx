@@ -118,6 +118,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               name="mark_number"
               value={formData.mark_number}
               onChange={handleChange}
+              maxLength={3} // Limits to 3 characters
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter 3-digit mark number"
             />

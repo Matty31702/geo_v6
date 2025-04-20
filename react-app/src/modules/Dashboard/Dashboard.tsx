@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import CustomHelmet from "../../components/CustomHelmet";
-import {
-  Users,
-  Truck,
-  Clock,
-  Activity,
-  MapPin,
-  Car,
-} from "lucide-react";
+import { Users, Truck, Clock, Activity, MapPin, Car } from "lucide-react";
 import usePersonnel from "../../components/hooks/usePersonnel";
 import useVehicle from "../../components/hooks/useVehicle";
 import Header from "./components/Header";
@@ -17,15 +10,14 @@ import QuickActionContainer from "./components/QuickActionContainer";
 import { Link } from "react-router-dom";
 import LINKS from "../../constants/links";
 import { GEO_FENCE_POLYGON } from "../Monitoring/constants";
+import FormModal from "./components/FormModal";
+import showToast from "../../utilities/toast";
 
 // Type for latitude/longitude pair
 type LatLngTuple = [number, number];
 
 // Function to check if a point is inside a polygon (ray casting algorithm)
-const isPointInPolygon = (
-  point: LatLngTuple,
-  polygon: LatLngTuple[]
-) => {
+const isPointInPolygon = (point: LatLngTuple, polygon: LatLngTuple[]) => {
   const x = point[0],
     y = point[1];
   let inside = false;
@@ -46,6 +38,9 @@ const isPointInPolygon = (
 };
 
 const Dashboard = () => {
+  // Modal state
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
   // Use the hooks
   const { personnels, getAllPersonnels } = usePersonnel();
   const { vehicles, getAllVehicles } = useVehicle();
@@ -64,7 +59,7 @@ const Dashboard = () => {
     getAllPersonnels();
     getAllVehicles();
 
-    // Use mock data or actual data when available
+    // Use empty data array or actual data when available
     const personnelData = personnels?.length ? personnels : [];
     const vehicleData = vehicles?.length ? vehicles : [];
 
@@ -106,6 +101,20 @@ const Dashboard = () => {
     });
   }, [personnels, vehicles]);
 
+  // Handle success full object addition
+  const handleObjectAdded = (activeTab: string) => {
+    // Refresh object list
+    if (activeTab === "Personnel") {
+      getAllPersonnels();
+
+      // Show success message or notification if needed
+      showToast.success("Successfully created a new personnel!");
+    } else {
+      getAllVehicles();
+      showToast.success("Successfully created a new vehicle!");
+    }
+  };
+
   return (
     <>
       <CustomHelmet title="Dashboard | Geobound" />
@@ -142,28 +151,50 @@ const Dashboard = () => {
 
         {/* Main Content (Quick Actions) */}
         <QuickActionContainer>
-          <Link to={LINKS.PERSONNELS} className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md flex items-center justify-center">
+          <Link
+            to={LINKS.PERSONNELS}
+            className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md flex items-center justify-center"
+          >
             <Users className="mr-2" size={18} />
             Personnel
           </Link>
-          <Link to={LINKS.VEHICLES} className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md flex items-center justify-center">
+          <Link
+            to={LINKS.VEHICLES}
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md flex items-center justify-center"
+          >
             <Car className="mr-2" size={18} />
             Vehicles
           </Link>
-          <button className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md flex items-center justify-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md flex items-center justify-center"
+          >
             <Clock className="mr-2" size={18} />
             Add Personnel/Vehicles
           </button>
-          <Link to={LINKS.ACTIVITIES} className="w-full py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-md flex items-center justify-center">
+          <Link
+            to={LINKS.ACTIVITIES}
+            className="w-full py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-md flex items-center justify-center"
+          >
             <Activity className="mr-2" size={18} />
             Logged Entry/Exit
           </Link>
-          <Link to={LINKS.MONITORING} className="w-full py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-md flex items-center justify-center">
+          <Link
+            to={LINKS.MONITORING}
+            className="w-full py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-md flex items-center justify-center"
+          >
             <MapPin className="mr-2" size={18} />
             Monitor Realtime Status
           </Link>
         </QuickActionContainer>
       </div>
+
+      {/* Form Modal */}
+      <FormModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onObjectAdded={handleObjectAdded}
+      />
     </>
   );
 };
