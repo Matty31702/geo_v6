@@ -38,6 +38,7 @@ export interface Personnel {
   birthday: string;
   isLoggedIn: boolean;
   vehicle?: Vehicle;
+  username: string;
 }
 
 export interface Vehicle {

@@ -16,16 +16,32 @@ import CustomMapContainer from "./components/CustomMapContainer";
 import MapLegendContainer from "./components/MapLegendContainer";
 import CustomHelmet from "../../components/CustomHelmet";
 import useVehicle from "../../components/hooks/useVehicle";
+import MapFooter from "./components/MapFooter";
+import ViewTableModal from "./components/ViewTableModal";
 
 const Monitoring = () => {
   // Use custom hook to get personnel data
   const { personnels, getAllPersonnels } = usePersonnel();
-  const {vehicles, getAllVehicles} = useVehicle();
+  const { vehicles, getAllVehicles } = useVehicle();
   const [refreshing, setRefreshing] = useState(false);
   const [personnelInGeofence, setPersonnelInGeofence] = useState(0);
   const [personnelOutsideGeofence, setPersonnelOutsideGeofence] = useState(0);
-  const [vehiclesWithCoordinates, setVehiclesWithCoordinates] = useState<Vehicle[]>([]);
-  
+  const [vehiclesWithCoordinates, setVehiclesWithCoordinates] = useState<
+    Vehicle[]
+  >([]);
+  const [modalViewType, setModalViewType] = useState<"Personnel" | "Vehicle">(
+    "Personnel"
+  );
+
+  // Modal State
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  // Handle Open Modal
+  const handleOpen = (value: "Personnel" | "Vehicle") => {
+    setIsOpen(true);
+    setModalViewType(value);
+  };
+
   // Refresh personnel and vehicle data without showing loading indicator
   const handleRefresh = () => {
     setRefreshing(true);
@@ -43,15 +59,15 @@ const Monitoring = () => {
   // Monitor Firebase users directly from the Users collection
   useEffect(() => {
     if (!personnels.length) return;
-    
+
     // Get Firestore instance
     const db = getFirestore();
-    
+
     // Set up monitoring for personnel
-    const unsubscribes = personnels.map(person => {
+    const unsubscribes = personnels.map((person) => {
       // Reference to the user's document in Firestore (in Users collection)
-      const userRef = doc(db, 'Users', person.id);
-      
+      const userRef = doc(db, "Users", person.id);
+
       return onSnapshot(userRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
           // This will automatically update the personnel data when it changes
@@ -60,10 +76,10 @@ const Monitoring = () => {
         }
       });
     });
-    
+
     // Clean up listeners when component unmounts
     return () => {
-      unsubscribes.forEach(unsubscribe => unsubscribe());
+      unsubscribes.forEach((unsubscribe) => unsubscribe());
     };
   }, [personnels]);
 
@@ -71,24 +87,23 @@ const Monitoring = () => {
   useEffect(() => {
     if (vehicles && vehicles.length > 0) {
       // Filter vehicles that have coordinates
-      const vehiclesWithValidCoords = vehicles.map(vehicle => {
-        // Extract coordinates from different possible formats
-        const latitude = vehicle.lat || 
-                         (vehicle.latitude) || 
-                         (vehicle.long ? null : null);
-        
-        const longitude = vehicle.lng || 
-                          vehicle.long || 
-                          (vehicle.longitude);
-        
-        // Return vehicle with normalized coordinates
-        return {
-          ...vehicle,
-          lat: parseFloat(latitude) || null,
-          lng: parseFloat(longitude) || null
-        };
-      }).filter(v => v.lat && v.lng);
-      
+      const vehiclesWithValidCoords = vehicles
+        .map((vehicle) => {
+          // Extract coordinates from different possible formats
+          const latitude =
+            vehicle.lat || vehicle.latitude || (vehicle.long ? null : null);
+
+          const longitude = vehicle.lng || vehicle.long || vehicle.longitude;
+
+          // Return vehicle with normalized coordinates
+          return {
+            ...vehicle,
+            lat: parseFloat(latitude) || null,
+            lng: parseFloat(longitude) || null,
+          };
+        })
+        .filter((v) => v.lat && v.lng);
+
       setVehiclesWithCoordinates(vehiclesWithValidCoords);
     }
   }, [vehicles]);
@@ -111,21 +126,21 @@ const Monitoring = () => {
 
   // Get valid personnel with coordinates
   const validPersonnel: Personnel[] = getValidPersonnel(personnels);
-  
+
   // Calculate personnel inside/outside geofence
   useEffect(() => {
     if (validPersonnel.length > 0) {
       let insideCount = 0;
       let outsideCount = 0;
-      
-      validPersonnel.forEach(person => {
+
+      validPersonnel.forEach((person) => {
         if (person.lat && person.lng) {
           // Check if personnel is inside geofence
           const isInside = isPointInPolygon(
             [person.lat, person.lng],
             geofencePolygon.coordinates
           );
-          
+
           if (isInside) {
             insideCount++;
           } else {
@@ -133,7 +148,7 @@ const Monitoring = () => {
           }
         }
       });
-      
+
       setPersonnelInGeofence(insideCount);
       setPersonnelOutsideGeofence(outsideCount);
     }
@@ -144,12 +159,17 @@ const Monitoring = () => {
 
   // Include vehicles in all markers for proper map bounds
   const allMarkers = [
-    ...getAllMarkers(policeHQ, geofenceCenter, geofencePolygon.name, validPersonnel),
-    ...vehiclesWithCoordinates.map(v => ({ lat: v.lat, lng: v.lng }))
+    ...getAllMarkers(
+      policeHQ,
+      geofenceCenter,
+      geofencePolygon.name,
+      validPersonnel
+    ),
+    ...vehiclesWithCoordinates.map((v) => ({ lat: v.lat, lng: v.lng })),
   ];
 
-  if(vehicles) {
-    console.log(vehicles)
+  if (vehicles) {
+    console.log(vehicles);
   }
 
   return (
@@ -196,27 +216,26 @@ const Monitoring = () => {
           </div>
         </div>
 
-        <div className="mt-4 bg-white p-4 rounded-lg shadow text-xs text-gray-500">
-          <p>
-            Map displays {validPersonnel.length} out of{" "}
-            {personnels.length} personnel with valid coordinates.
-          </p>
-          <p>
-            Online personnel: {validPersonnel.filter(p => p.isLoggedIn).length}
-          </p>
-          <p>
-            Vehicles displayed: {vehiclesWithCoordinates.length} out of {vehicles?.length || 0} vehicles
-          </p>
-          <p>
-            Personnel inside geofence: {personnelInGeofence} | Outside geofence: {personnelOutsideGeofence}
-          </p>
-          <p>
-            Custom geofence area defined with{" "}
-            {geofencePolygon.coordinates.length} points.
-          </p>
-          <p>Last updated: {new Date().toLocaleString()}</p>
-        </div>
+        <MapFooter
+          validPersonnel={validPersonnel}
+          personnels={personnels}
+          vehiclesWithCoordinates={vehiclesWithCoordinates}
+          vehicles={vehicles}
+          personnelInGeofence={personnelInGeofence}
+          personnelOutsideGeofence={personnelOutsideGeofence}
+          geofencePolygon={geofencePolygon}
+          handleOpen={handleOpen}
+        />
       </div>
+
+      <ViewTableModal
+        type={modalViewType}
+        isOpen={isOpen}
+        personnels={personnels}
+        vehicles={vehicles}
+        onClose={() => setIsOpen(false)}
+        geofencePolygon={geofencePolygon}
+      />
     </>
   );
 };
