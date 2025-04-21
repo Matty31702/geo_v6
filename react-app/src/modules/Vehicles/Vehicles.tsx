@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import useVehicle from "../../components/hooks/useVehicle";
-import { PenTool, Plus, RefreshCw, Search } from "lucide-react";
+import { PenTool, RefreshCw, Search } from "lucide-react";
 import { Vehicle } from "../../types/firestore";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import AddVehicleModal from "./components/forms/AddVehicleModal";

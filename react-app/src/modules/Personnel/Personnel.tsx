@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import usePersonnel from "../../components/hooks/usePersonnel";
-import { Search, RefreshCw, Plus } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import AddUserModal from "./components/forms/AddUserModal";
