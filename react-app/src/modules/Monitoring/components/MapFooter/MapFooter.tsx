@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 import { Personnel, Vehicle } from "../../../../types/firestore";
 import { GeofencePolygon } from "../../types";
 
@@ -15,19 +15,19 @@ interface MapFooterProps {
 }
 
 const MapFooter: React.FC<MapFooterProps> = ({
-  validPersonnel,
-  personnels,
-  vehicles,
-  vehiclesWithCoordinates,
-  personnelInGeofence,
-  personnelOutsideGeofence,
-  geofencePolygon,
+  // validPersonnel,
+  // personnels,
+  // vehicles,
+  // vehiclesWithCoordinates,
+  // personnelInGeofence,
+  // personnelOutsideGeofence,
+  // geofencePolygon,
   handleOpen,
 }) => {
   return (
     <>
       <div className="space-y-3">
-        <div className="mt-4 bg-white p-4 rounded-lg shadow text-xs text-gray-500">
+        {/* <div className="mt-4 bg-white p-4 rounded-lg shadow text-xs text-gray-500">
           <p>
             Map displays {validPersonnel.length} out of {personnels.length}{" "}
             personnel with valid coordinates.
@@ -49,18 +49,18 @@ const MapFooter: React.FC<MapFooterProps> = ({
             {geofencePolygon.coordinates.length} points.
           </p>
           <p>Last updated: {new Date().toLocaleString()}</p>
-        </div>
+        </div> */}
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 mt-3">
           <button
             onClick={() => handleOpen("Personnel")}
-            className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 transition duration-75"
+            className="w-full px-3 font-bold text-white py-2 bg-yellow-500 hover:bg-yellow-600 transition duration-75"
           >
             Personnels
           </button>
           <button
             onClick={() => handleOpen("Vehicle")}
-            className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 transition duration-75"
+            className="w-full px-3 font-bold text-white py-2 bg-yellow-500 hover:bg-yellow-600 transition duration-75"
           >
             Vehicles
           </button>
