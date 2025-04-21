@@ -87,7 +87,7 @@ const Sidebar = () => {
               <NavButton
                 to={LINKS.PERSONNELS}
                 icon={<Users size={20} />}
-                text="Number of Personnel"
+                text="Personnels"
                 isExpanded={sidebarOpen}
               />
               <NavButton

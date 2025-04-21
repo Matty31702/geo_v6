@@ -53,12 +53,17 @@ const Dashboard = () => {
     vehiclesInside: 0,
   });
 
-  // Process data
+  // Fetch data only once when component mounts
   useEffect(() => {
-    // Fetch data
     getAllPersonnels();
     getAllVehicles();
+  }, []); // Empty dependency array ensures it only runs once
 
+  // Process data separately when personnels or vehicles change
+  useEffect(() => {
+    // Skip calculations if data isn't loaded yet
+    if (!personnels || !vehicles) return;
+    
     // Use empty data array or actual data when available
     const personnelData = personnels?.length ? personnels : [];
     const vehicleData = vehicles?.length ? vehicles : [];
@@ -192,6 +197,7 @@ const Dashboard = () => {
       {/* Form Modal */}
       <FormModal
         isOpen={isOpen}
+        personnels={personnels}
         onClose={() => setIsOpen(false)}
         onObjectAdded={handleObjectAdded}
       />

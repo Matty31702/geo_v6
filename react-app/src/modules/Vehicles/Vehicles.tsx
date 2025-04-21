@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import useVehicle from "../../components/hooks/useVehicle";
-import { PenTool, Plus, RefreshCw, Search } from "lucide-react";
+import { PenTool, RefreshCw, Search } from "lucide-react";
 import { Vehicle } from "../../types/firestore";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import AddVehicleModal from "./components/forms/AddVehicleModal";
@@ -90,6 +90,7 @@ const Vehicles = () => {
     setCurrentPage(1);
   }, [searchTerm, searchTerm]);
 
+
   return (
     <>
       <CustomHelmet title="Vehicles | Geobound" />
@@ -146,7 +147,7 @@ const Vehicles = () => {
                   ))}
                 </select>
               </div>
-              <div>
+              {/* <div>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
                   className="flex items-center gap-1 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 border border-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -154,7 +155,7 @@ const Vehicles = () => {
                   <Plus size={18} />
                   Add New Vehicle
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -196,9 +197,9 @@ const Vehicles = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Plate Number
                     </th>
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Assigned Personnel
-                    </th> */}
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Action
                     </th>
@@ -235,9 +236,11 @@ const Vehicles = () => {
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {vehicle.plate_number}
                         </td>
-                        {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {vehicle.user_id}
-                        </td> */}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {
+                            vehicle.user && vehicle.user.name
+                          }
+                        </td>
                         <td className="px-4 py-3 space-x-3 text-sm text-center">
                           <button
                             onClick={() => {

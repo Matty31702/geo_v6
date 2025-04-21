@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import usePersonnel from "../../components/hooks/usePersonnel";
-import { Search, RefreshCw, Plus } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import AddUserModal from "./components/forms/AddUserModal";
@@ -35,14 +35,6 @@ const Personnel = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  // Get unique personnel types and sectors for filters
-  /* const personTypes = [
-    ...new Set(personnels?.map((person) => person.type) || []),
-  ];
-  const sectors = [
-    ...new Set(personnels?.map((person) => person.sector) || []),
-  ]; */
-
   // Filter personnel based on search and filters
   const filteredPersonnel =
     personnels?.filter((person) => {
@@ -52,17 +44,11 @@ const Personnel = () => {
         person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.phone_number?.includes(searchTerm);
 
-      //const matchesType = !filterType || person.type === filterType;
-      // const matchesSector = !filterSector || person.sector === filterSector;
-
-      /* return matchesSearch && matchesType && matchesSector; */
       return matchesSearch;
     }) || [];
 
   // Summary statistics
   const totalPersonnel = personnels?.length || 0;
-  // const verifiedCount = personnels?.filter((p) => p.isVerified).length || 0;
-  // const unverifiedCount = totalPersonnel - verifiedCount;
 
   // Calculate personnel counts by type
   const personnelByType: { [key: string]: number } = {};
@@ -101,15 +87,6 @@ const Personnel = () => {
     showToast.success("Successfully edited a personnel!");
   };
 
-  /* const exportToCSV = () => {
-    // Implementation for exporting to CSV would go here
-    alert("Export to CSV functionality would be implemented here");
-  }; */
-
-  /* const printData = () => {
-    window.print();
-  }; */
-
   return (
     <>
       <CustomHelmet title="Personnels | Geobound" />
@@ -128,30 +105,7 @@ const Personnel = () => {
             <h3 className="text-sm text-gray-500 mb-1">Total Personnels</h3>
             <p className="text-2xl font-bold text-gray-800">{totalPersonnel}</p>
           </div>
-          {/* <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm text-gray-500 mb-1">Verified Personnel</h3>
-          <div className="flex items-center">
-            <p className="text-2xl font-bold text-green-600">{verifiedCount}</p>
-            <span className="text-sm text-gray-500 ml-2">
-              ({totalPersonnel ? Math.round((verifiedCount / totalPersonnel) * 100) : 0}%)
-            </span>
-          </div>
-        </div> */}
-          {/* <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm text-gray-500 mb-1">Pending Verification</h3>
-          <p className="text-2xl font-bold text-amber-500">{unverifiedCount}</p>
-        </div> */}
-          {/* <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm text-gray-500 mb-1">Personnel Types</h3>
-          <div className="text-sm mt-2 max-h-20 overflow-auto">
-            {Object.entries(personnelByType).map(([type, count]) => (
-              <div key={type} className="flex justify-between mb-1">
-                <span className="text-gray-600">{type}:</span>
-                <span className="font-medium">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div> */}
+      
         </div>
 
         {/* Search and Filter Section */}
@@ -172,48 +126,7 @@ const Personnel = () => {
                 />
               </div>
             </div>
-            <div className="w-full md:w-auto flex flex-wrap gap-2 items-center">
-              {/* <div className="relative">
-              <Filter size={20} className="absolute left-3 top-2.5 text-gray-400" />
-              <select
-                className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-              >
-                <option value="">All Types</option>
-                {personTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div> */}
-              {/* <div className="relative">
-                <MapPin
-                  size={20}
-                  className="absolute left-3 top-2.5 text-gray-400"
-                />
-                <select
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
-                  value={filterSector}
-                  onChange={(e) => setFilterSector(e.target.value)}
-                >
-                  <option value="">All Sectors</option>
-                  {sectors.map((sector) => (
-                    <option key={sector} value={sector}>
-                      {sector}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
-              <div>
-                <button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="flex items-center gap-1 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 border border-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                >
-                  <Plus size={18} />
-                  Add New Personnel
-                </button>
-              </div>
-            </div>
+            
           </div>
         </div>
 
@@ -248,16 +161,7 @@ const Personnel = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Name
                     </th>
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th> */}
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th> */}
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sector
-                    </th> */}
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Coordinates
-                    </th> */}
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th> */}
+                 
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
@@ -284,46 +188,7 @@ const Personnel = () => {
                             {person.name || "-"}
                           </div>
                         </td>
-                        {/* <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">{person.email || "-"}</div>
-                        <div className="text-sm text-gray-500">{person.number || "-"}</div>
-                      </td> */}
-                        {/* <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {person.type}
-                        </span>
-                      </td> */}
-                        {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {person.sector}
-                        </td> */}
-                        {/* <td className="px-4 py-3">
-                          <div
-                            className="text-sm text-gray-900 truncate max-w-xs"
-                            title={person.address}
-                          >
-                            {person.address}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {person.lat}, {person.lng}
-                          </div>
-                        </td> */}
-                        {/* <td className="px-4 py-3 whitespace-nowrap">
-                        {person.isVerified ? (
-                          <span className="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            <UserCheck size={14} className="mr-1" /> Verified
-                          </span>
-                        ) : (
-                          <span className="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
-                            <UserX size={14} className="mr-1" /> Pending
-                          </span>
-                        )}
-                      </td> */}
-                        {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(person.dateTime.seconds * 1000).toLocaleDateString()}
-                        <div className="text-xs text-gray-400">
-                          {new Date(person.dateTime.seconds * 1000).toLocaleTimeString()}
-                        </div>
-                      </td> */}
+                     
                         <td className="px-4 py-3 space-x-3 text-sm text-center">
                           <button
                             onClick={() => {
@@ -334,9 +199,7 @@ const Personnel = () => {
                           >
                             Edit
                           </button>
-                          {/* <button className="text-red-600 hover:text-red-800">
-                            Delete
-                          </button> */}
+                         
                         </td>
                       </tr>
                     ))

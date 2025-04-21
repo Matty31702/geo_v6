@@ -1,11 +1,15 @@
 import { useState } from "react";
-import FormContainer from "../FormContainer/FormContainer";
 import FormHeader from "../FormHeader";
 import useFormData from "../../../../components/hooks/useFormData";
 import usePersonnel from "../../../../components/hooks/usePersonnel";
-import { validateUserForm, validateVehicleForm } from "../../../../utilities/validation";
+import {
+  validateUserForm,
+  validateVehicleForm,
+} from "../../../../utilities/validation";
 import useVehicle from "../../../../components/hooks/useVehicle";
 import { Loader2, Plus } from "lucide-react";
+import { Personnel } from "../../../../types/firestore";
+import FormContainer from "../../../../components/FormContainer/FormContainer";
 
 interface PersonnelFormDataProps {
   name: string;
@@ -28,15 +32,21 @@ interface VehicleFormDataProps {
   model: string;
   plate_number: string;
   user_id: string;
-} 
+}
 
 interface FormModalProps {
   isOpen: boolean;
+  personnels: Personnel[];
   onObjectAdded: (activeTab: string) => void;
   onClose: () => void;
 }
 
-const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose }) => {
+const FormModal: React.FC<FormModalProps> = ({
+  isOpen,
+  personnels,
+  onObjectAdded,
+  onClose,
+}) => {
   // Active Tab
   const [activeTab, setActiveTab] = useState<string>("Personnel");
 
@@ -44,14 +54,18 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
   const [loading, setLoading] = useState<boolean>(false);
 
   // Use personnel and vehicle hook
-  const {addPersonnel} = usePersonnel();
-  const {addVehicle} = useVehicle();
+  const { addPersonnel } = usePersonnel();
+  const { addVehicle } = useVehicle();
 
   // Error state
   const [error, setError] = useState<string>("");
 
   // Personnel Form Data
-  const { formData: personnelData, handleChange: handlePersonnelChange, reset:personnelReset } = useFormData<PersonnelFormDataProps>({
+  const {
+    formData: personnelData,
+    handleChange: handlePersonnelChange,
+    reset: personnelReset,
+  } = useFormData<PersonnelFormDataProps>({
     initialValues: {
       name: "",
       username: "",
@@ -65,18 +79,22 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
       gender: "",
       guardian_name: "",
       guardian_phone_number: "",
-      birthday: ""
-    }
+      birthday: "",
+    },
   });
 
   // Vehicle Form Data
-  const { formData: vehicleData, handleChange: handleVehicleChange, reset:vehicleReset } = useFormData<VehicleFormDataProps>({
+  const {
+    formData: vehicleData,
+    handleChange: handleVehicleChange,
+    reset: vehicleReset,
+  } = useFormData<VehicleFormDataProps>({
     initialValues: {
       color: "",
       model: "",
       plate_number: "",
-      user_id: ""
-    }
+      user_id: "",
+    },
   });
 
   // Handle Submit
@@ -85,31 +103,27 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
 
     let validationError;
 
-    if(activeTab === 'Personnel') {
-
+    if (activeTab === "Personnel") {
       validationError = validateUserForm(personnelData);
 
-      if(validationError) {
+      if (validationError) {
         setError(validationError);
-        return
+        return;
       }
     } else {
-
       validationError = validateVehicleForm(vehicleData);
 
-      if(validationError) {
+      if (validationError) {
         setError(validationError);
-        return
+        return;
       }
     }
 
     try {
-
       // Set Loading
       setLoading(true);
 
       if (activeTab === "Personnel") {
-
         // Submit personnel data
         // console.log("Submitting personnel data:", personnelData);
         // API call would go here
@@ -117,7 +131,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
 
         // Reset form and close modal
         personnelReset();
-        
       } else {
         // Submit vehicle data
         // console.log("Submitting vehicle data:", vehicleData);
@@ -129,8 +142,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
       }
 
       // Notify parent component of success
-      if(onObjectAdded) onObjectAdded(activeTab);
-      
+      if (onObjectAdded) onObjectAdded(activeTab);
+
       // Close modal on success
       onClose();
     } catch (err) {
@@ -147,7 +160,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
   return (
     <FormContainer>
       <FormHeader title={`Add ${activeTab}`} error={error} onClose={onClose} />
-      
+
       {/* Tab Navigation */}
       <div className="flex border-b">
         <button
@@ -174,7 +187,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 overflow-y-auto max-h-[70vh]">
+      <form
+        onSubmit={handleSubmit}
+        className="p-4 overflow-y-auto max-h-[70vh]"
+      >
         {activeTab === "Personnel" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Personnel Form Fields */}
@@ -192,7 +208,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Username*
@@ -207,7 +223,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Phone Number*
@@ -222,7 +238,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mark Number
@@ -237,7 +253,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 placeholder="Enter 3-digit mark number"
               />
             </div>
-            
+
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address*
@@ -252,7 +268,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password*
@@ -267,7 +283,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm Password*
@@ -282,10 +298,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address
+                Address*
               </label>
               <textarea
                 name="address"
@@ -294,9 +310,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter address"
                 rows={2}
+                required
               />
             </div>
-            
+
             {/* <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Type*
@@ -315,16 +332,17 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 <option value="visitor">Visitor</option>
               </select>
             </div> */}
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Gender
+                Gender*
               </label>
               <select
                 name="gender"
                 value={personnelData.gender}
                 onChange={handlePersonnelChange}
                 className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                required
               >
                 <option value="">Select gender</option>
                 <option value="male">Male</option>
@@ -332,10 +350,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 <option value="other">Other</option>
               </select>
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Guardian Name
+                Guardian Name*
               </label>
               <input
                 type="text"
@@ -344,12 +362,13 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 onChange={handlePersonnelChange}
                 className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter guardian name"
+                required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Guardian Phone Number
+                Guardian Phone Number*
               </label>
               <input
                 type="tel"
@@ -358,12 +377,13 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 onChange={handlePersonnelChange}
                 className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter guardian phone number"
+                required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Birthday
+                Birthday*
               </label>
               <input
                 type="date"
@@ -371,6 +391,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 value={personnelData.birthday}
                 onChange={handlePersonnelChange}
                 className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                required
               />
             </div>
           </div>
@@ -393,7 +414,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Color*
@@ -408,7 +429,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 License Plate Number*
@@ -423,10 +444,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div>
-            
+
             {/* <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Owner ID*
+                Assign Personnel*
               </label>
               <input
                 type="text"
@@ -438,6 +459,26 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onObjectAdded, onClose })
                 required
               />
             </div> */}
+
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Assign Personnel
+              </label>
+              <select
+                name="user_id"
+                value={vehicleData.user_id}
+                onChange={handleVehicleChange}
+                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select Personnel</option>
+                {personnels.map((personnel) => (
+                  <option key={personnel.id} value={personnel.id}>
+                    {personnel.vehicle ? "🟢" : "🔴"} {personnel.name} |{" "}
+                    {personnel.vehicle ? personnel.vehicle.model : "No Vehicle"}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 
