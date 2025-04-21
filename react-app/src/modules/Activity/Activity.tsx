@@ -1,10 +1,311 @@
+import { useEffect, useState } from "react";
+import { Search, RefreshCw, Download } from "lucide-react";
+import CustomHelmet from "../../components/CustomHelmet";
+import HeaderSection from "../../components/HeaderSection";
+import showToast from "../../utilities/toast";
+import PaginationControl from "../../components/paginations/PaginationControl";
+import { format } from "date-fns";
+import useActivity from "../../components/hooks/useActivity";
 
 const Activity = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+  const {
+    loading,
+    error,
+    activities,
+    getAllActivities,
+  } = useActivity();
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-export default Activity
+  useEffect(() => {
+    getAllActivities();
+  }, []);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, startDate, endDate]);
+
+  // Filter activities based on search and date filters
+  const filteredActivities = activities?.filter((record: any) => {
+    // Search filter
+    const matchesSearch =
+      !searchTerm ||
+      record.user_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (record.status && record.status.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // Date filter
+    let matchesDate = true;
+    if (startDate || endDate) {
+      const recordDate = record.date_time ? new Date(record.date_time) : null;
+      
+      if (recordDate) {
+        if (startDate) {
+          const start = new Date(startDate);
+          start.setHours(0, 0, 0, 0);
+          if (recordDate < start) matchesDate = false;
+        }
+        
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          if (recordDate > end) matchesDate = false;
+        }
+      }
+    }
+
+    return matchesSearch && matchesDate;
+  }) || [];
+
+  // Pagination
+  const lastPage = Math.ceil(filteredActivities.length / itemsPerPage);
+  const currentItems = filteredActivities.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Handle refresh function
+  const handleRefresh = () => {
+    getAllActivities();
+    showToast.success("Activities refreshed successfully!");
+  };
+
+  // Export to CSV function
+  const exportToCSV = () => {
+    if (filteredActivities.length === 0) {
+      showToast.error("No activities to export");
+      return;
+    }
+
+    // Define CSV headers
+    const headers = ["ID", "User ID", "Date & Time", "Latitude", "Longitude", "Status"];
+    
+    // Create CSV content
+    const csvContent = [
+      headers.join(","),
+      ...filteredActivities.map((record: any) => [
+        record.id || "",
+        record.user_id || "",
+        record.date_time || "",
+        record.lat || "",
+        record.lng || "",
+        record.status || ""
+      ].join(","))
+    ].join("\n");
+    
+    // Create and download the CSV file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `activities_export_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast.success("Activities exported successfully!");
+  };
+
+  // Format date for display
+  const formatDateTime = (dateTimeString: string) => {
+    if (!dateTimeString) return "-";
+    try {
+      const date = new Date(dateTimeString);
+      return format(date, "MMM dd, yyyy HH:mm:ss");
+    } catch (error) {
+      return dateTimeString;
+    }
+  };
+
+  return (
+    <>
+      <CustomHelmet title="Activities | Geobound" />
+
+      <div className="p-6 bg-gray-50 min-h-screen">
+        {/* Header Section */}
+        <HeaderSection
+          title="Activities Management"
+          description="View and monitor all personnel location activities"
+          handleRefresh={handleRefresh}
+        />
+
+        {/* Stats Cards */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-sm text-gray-500 mb-1">Total Activities</h3>
+            <p className="text-2xl font-bold text-gray-800">{activities?.length || 0}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-sm text-gray-500 mb-1">Active Status</h3>
+            <p className="text-2xl font-bold text-gray-800">
+              {activities?.filter((r: any) => r.status === "IN").length || 0} IN / {activities?.filter((r: any) => r.status === "OUT").length || 0} OUT
+            </p>
+          </div>
+        </div> */}
+
+        {/* Search and Filter Section */}
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+          <div className="flex justify-between items-center gap-4">
+            {/* Search input */}
+            {/* <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search
+                  size={20}
+                  className="absolute left-3 top-2.5 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Search by user ID or status..."
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div> */}
+            
+            {/* Date filters */}
+            <div className="flex gap-2">
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">Start Date</label>
+                <input
+                  type="date"
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-1">End Date</label>
+                <input
+                  type="date"
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            {/* Export button */}
+            <div className="flex items-end">
+              <button
+                onClick={exportToCSV}
+                className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center hover:bg-green-700"
+              >
+                <Download size={16} className="mr-2" /> Export to CSV
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Table Section */}
+        {loading ? (
+          <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 flex justify-center">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="mt-4 text-gray-600">Loading activities data...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200 text-red-700">
+            <p className="font-medium">Error loading activities</p>
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={handleRefresh}
+              className="mt-2 px-4 py-1 bg-red-100 text-red-700 rounded-md flex items-center hover:bg-red-200"
+            >
+              <RefreshCw size={16} className="mr-2" /> Try Again
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User ID
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date & Time
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentItems.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-4 py-8 text-center text-gray-500"
+                      >
+                        No activities found matching your criteria
+                      </td>
+                    </tr>
+                  ) : (
+                    currentItems.map((record: any, index: any) => (
+                      <tr key={record.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {(currentPage - 1) * itemsPerPage + index + 1}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {record.user_id || "-"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {formatDateTime(record.date_time)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {record.lat && record.lng 
+                            ? `${record.lat}, ${record.lng}`
+                            : "-"}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              record.status === "IN"
+                                ? "bg-green-100 text-green-800"
+                                : record.status === "OUT"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {record.status || "UNKNOWN"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <PaginationControl
+              filteredArray={filteredActivities}
+              currentPage={currentPage}
+              lastPage={lastPage}
+              itemsPerPage={itemsPerPage}
+              setCurrentPage={setCurrentPage}
+            />
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+export default Activity;
