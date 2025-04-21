@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, RefreshCw, Download } from "lucide-react";
+import {  RefreshCw, Download } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import showToast from "../../utilities/toast";
@@ -15,7 +15,7 @@ const Activity = () => {
     getAllActivities,
   } = useActivity();
   
-  const [searchTerm, setSearchTerm] = useState("");
+  /* const [searchTerm, setSearchTerm] = useState(""); */
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,15 +28,15 @@ const Activity = () => {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, startDate, endDate]);
+  }, [startDate, endDate]);
 
   // Filter activities based on search and date filters
   const filteredActivities = activities?.filter((record: any) => {
     // Search filter
     const matchesSearch =
-      !searchTerm ||
-      record.user_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (record.status && record.status.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      record.user_id?.toLowerCase() ||
+      (record.status && record.status.toLowerCase());
 
     // Date filter
     let matchesDate = true;
