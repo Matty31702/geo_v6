@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { MapContainer, Marker, Polygon, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import { GeofencePolygon, PoliceHQ } from "../../types";
-import { Personnel } from "../../../../types/firestore";
+import { Personnel, Vehicle } from "../../../../types/firestore";
 import { isPointInPolygon } from "../../utilities/geofencing";
 
 // Custom icon for personnel with mark numbers
@@ -36,6 +36,34 @@ const createMarkedIcon = (isLoggedIn: boolean, markNumber: string, isInsideGeofe
     iconSize: [24, 24],
     iconAnchor: [12, 12],
     popupAnchor: [0, -12],
+  });
+};
+
+// Custom icon for vehicles
+const createVehicleIcon = (model: string) => {
+  // Size based on model name length (minimum 24px, maximum 40px)
+  const size = Math.min(Math.max(24, model.length * 3), 40);
+  
+  return L.divIcon({
+    className: "vehicle-marker-icon",
+    html: `
+      <div style="
+        background-color: #3b82f6; 
+        color: #ffffff; 
+        width: ${size}px; 
+        height: ${size}px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 10px; 
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      ">${model || 'N/A'}</div>
+    `,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    popupAnchor: [0, -size/2],
   });
 };
 
@@ -76,6 +104,7 @@ interface CustomMapContainerProps {
   policeHQ: PoliceHQ;
   geofencePolygon: GeofencePolygon;
   filteredPersonnel: Personnel[];
+  vehicles: Vehicle[];
   allMarkers: any[];
 }
 
@@ -84,15 +113,11 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
   geofencePolygon,
   filteredPersonnel,
   allMarkers,
+  vehicles,
 }) => {
   // Store map instance reference
   const mapRef = useRef<L.Map | null>(null);
   
-  // Get map reference when initialized
-  /* const whenCreated = (map: L.Map) => {
-    mapRef.current = map;
-  }; */
-
   return (
     <div className="bg-white p-4 rounded-lg shadow flex-grow">
       <div className="h-[500px]">
@@ -143,6 +168,55 @@ const CustomMapContainer: React.FC<CustomMapContainerProps> = ({
               </div>
             </Popup>
           </Polygon>
+
+          {/* Vehicle Markers */}
+          {vehicles.map((vehicle) => {
+            // Only render vehicles with latitude and longitude coordinates
+            if (!vehicle.lat && !vehicle.lng && !vehicle.long) {
+              return null;
+            }
+            
+            // Use long property if lat property is not available
+            const latitude = vehicle.lat || (vehicle.latitude || 0);
+            const longitude = vehicle.lng || (vehicle.long || 0);
+            
+            // Only display if we have valid coordinates
+            if (!latitude || !longitude) return null;
+            
+            return (
+              <Marker
+                key={vehicle.id}
+                position={[latitude, longitude]}
+                icon={createVehicleIcon(vehicle.model)}
+              >
+                <Popup className="vehicle-popup">
+                  <div className="font-medium text-lg">{vehicle.model || "Unknown Model"}</div>
+                  <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
+                    <div className="text-gray-500">Plate:</div>
+                    <div>{vehicle.plate_number || vehicle.platenumber || "N/A"}</div>
+                    <div className="text-gray-500">Color:</div>
+                    <div>{vehicle.color || "N/A"}</div>
+                    <div className="text-gray-500">Position:</div>
+                    <div>
+                      {latitude.toFixed(5)}, {longitude.toFixed(5)}
+                    </div>
+                    {vehicle.user_id && (
+                      <>
+                        <div className="text-gray-500">Owner ID:</div>
+                        <div>{vehicle.user_id || vehicle.userId || "N/A"}</div>
+                      </>
+                    )}
+                    {/* {vehicle.datetime && (
+                      <>
+                        <div className="text-gray-500">Last Updated:</div>
+                        <div>{new Date(vehicle.datetime.seconds * 1000).toLocaleString()}</div>
+                      </>
+                    )} */}
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
 
           {/* Personnel Markers with Mark Numbers */}
           {filteredPersonnel.map((person: Personnel) => {

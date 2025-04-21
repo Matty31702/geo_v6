@@ -10,30 +10,34 @@ import {
   getValidPersonnel,
   isPointInPolygon,
 } from "./utilities/geofencing";
-import { Personnel } from "../../types/firestore";
+import { Personnel, Vehicle } from "../../types/firestore";
 import MapHeader from "./components/MapHeader";
 import CustomMapContainer from "./components/CustomMapContainer";
 import MapLegendContainer from "./components/MapLegendContainer";
 import CustomHelmet from "../../components/CustomHelmet";
+import useVehicle from "../../components/hooks/useVehicle";
 
 const Monitoring = () => {
   // Use custom hook to get personnel data
   const { personnels, getAllPersonnels } = usePersonnel();
+  const {vehicles, getAllVehicles} = useVehicle();
   const [refreshing, setRefreshing] = useState(false);
   const [personnelInGeofence, setPersonnelInGeofence] = useState(0);
   const [personnelOutsideGeofence, setPersonnelOutsideGeofence] = useState(0);
+  const [vehiclesWithCoordinates, setVehiclesWithCoordinates] = useState<Vehicle[]>([]);
   
-  // Refresh personnel data without showing loading indicator
+  // Refresh personnel and vehicle data without showing loading indicator
   const handleRefresh = () => {
     setRefreshing(true);
-    getAllPersonnels().then(() => {
+    Promise.all([getAllPersonnels(), getAllVehicles()]).then(() => {
       setTimeout(() => setRefreshing(false), 600);
     });
   };
 
-  // Load personnel on component mount (silently)
+  // Load personnel and vehicles on component mount (silently)
   useEffect(() => {
     getAllPersonnels();
+    getAllVehicles();
   }, []);
 
   // Monitor Firebase users directly from the Users collection
@@ -63,11 +67,37 @@ const Monitoring = () => {
     };
   }, [personnels]);
 
+  // Process vehicles to include coordinates
+  useEffect(() => {
+    if (vehicles && vehicles.length > 0) {
+      // Filter vehicles that have coordinates
+      const vehiclesWithValidCoords = vehicles.map(vehicle => {
+        // Extract coordinates from different possible formats
+        const latitude = vehicle.lat || 
+                         (vehicle.latitude) || 
+                         (vehicle.long ? null : null);
+        
+        const longitude = vehicle.lng || 
+                          vehicle.long || 
+                          (vehicle.longitude);
+        
+        // Return vehicle with normalized coordinates
+        return {
+          ...vehicle,
+          lat: parseFloat(latitude) || null,
+          lng: parseFloat(longitude) || null
+        };
+      }).filter(v => v.lat && v.lng);
+      
+      setVehiclesWithCoordinates(vehiclesWithValidCoords);
+    }
+  }, [vehicles]);
+
   // Refresh data every 30 seconds silently (no loading state)
   useEffect(() => {
     const interval = setInterval(() => {
       getAllPersonnels();
-      // console.log("Auto-refreshing personnel data");
+      getAllVehicles();
     }, 30000);
 
     return () => clearInterval(interval);
@@ -112,12 +142,15 @@ const Monitoring = () => {
   // Prepare markers for map bounds calculation
   const geofenceCenter: GeofenceCenter = getGeofenceCenter(geofencePolygon);
 
-  const allMarkers = getAllMarkers(
-    policeHQ,
-    geofenceCenter,
-    geofencePolygon.name,
-    validPersonnel
-  );
+  // Include vehicles in all markers for proper map bounds
+  const allMarkers = [
+    ...getAllMarkers(policeHQ, geofenceCenter, geofencePolygon.name, validPersonnel),
+    ...vehiclesWithCoordinates.map(v => ({ lat: v.lat, lng: v.lng }))
+  ];
+
+  if(vehicles) {
+    console.log(vehicles)
+  }
 
   return (
     <>
@@ -136,11 +169,12 @@ const Monitoring = () => {
             policeHQ={policeHQ}
             geofencePolygon={geofencePolygon}
             filteredPersonnel={validPersonnel}
+            vehicles={vehiclesWithCoordinates}
             allMarkers={allMarkers}
           />
         </div>
 
-        <MapLegendContainer />
+        <MapLegendContainer vehicleCount={vehiclesWithCoordinates.length} />
 
         {/* Update Legend to include login status indicators */}
         <div className="mt-4 flex items-center gap-4 bg-white p-4 rounded-lg shadow">
@@ -156,6 +190,10 @@ const Monitoring = () => {
             <div className="w-3 h-3 border-3 border-yellow-400 rounded-full"></div>
             <span className="text-sm">Outside Geofence</span>
           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-500"></div>
+            <span className="text-sm">Vehicle</span>
+          </div>
         </div>
 
         <div className="mt-4 bg-white p-4 rounded-lg shadow text-xs text-gray-500">
@@ -165,6 +203,9 @@ const Monitoring = () => {
           </p>
           <p>
             Online personnel: {validPersonnel.filter(p => p.isLoggedIn).length}
+          </p>
+          <p>
+            Vehicles displayed: {vehiclesWithCoordinates.length} out of {vehicles?.length || 0} vehicles
           </p>
           <p>
             Personnel inside geofence: {personnelInGeofence} | Outside geofence: {personnelOutsideGeofence}
