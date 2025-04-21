@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mobile/services/auth_service.dart';
+import 'package:geobound/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {

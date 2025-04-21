@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mobile/wrappers/auth_wrapper.dart';
+import 'package:geobound/wrappers/auth_wrapper.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

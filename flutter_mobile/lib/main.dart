@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_mobile/app.dart';
-import 'package:flutter_mobile/services/firebase_options.dart';
+import 'package:geobound/app.dart';
+import 'package:geobound/services/firebase_options.dart';
 
 // Add this file to your project and update with your Firebase config
 
