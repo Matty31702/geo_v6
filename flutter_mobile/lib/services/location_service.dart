@@ -3,7 +3,7 @@ import 'package:location/location.dart' as loc;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:async';
-import 'package:flutter_mobile/models/geofence_model.dart';
+import 'package:geobound/models/geofence_model.dart';
 
 typedef LocationChangedCallback =
     void Function(loc.LocationData? locationData, String? error);

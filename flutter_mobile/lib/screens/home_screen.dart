@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mobile/services/auth_service.dart';
+import 'package:geobound/services/auth_service.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_mobile/services/location_service.dart';
-import 'package:flutter_mobile/models/geofence_model.dart';
-import 'package:flutter_mobile/widgets/status_bar.dart';
-import 'package:flutter_mobile/widgets/location_info.dart';
+import 'package:geobound/services/location_service.dart';
+import 'package:geobound/models/geofence_model.dart';
+import 'package:geobound/widgets/status_bar.dart';
+import 'package:geobound/widgets/location_info.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart'
     as fmctp;
@@ -66,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _checkIfInGeofence();
           _updateAttendanceStatus();
           _updateUserLocation();
+          _updateUserLoginStatus(true);
 
           // Only use the map controller if follow is enabled AND we're sure the map is initialized
           if (_followUser &&
