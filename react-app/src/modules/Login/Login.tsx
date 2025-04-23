@@ -52,8 +52,8 @@ const Login = () => {
       const userType = userData.type; // "Personnel" in your case
       // console.log(userData);
       if (
-        (loginType === "admin" && userType !== "Admin") ||
-        (loginType === "superadmin" && userType !== "SuperAdmin")
+        (loginType === "admin" && userType !== "admin") ||
+        (loginType === "superadmin" && userType !== "superadmin")
       ) {
         setError(
           `This ID is not registered as a ${

@@ -117,7 +117,8 @@ const personnelService = {
       // Add user to Firestore
       await setDoc(doc(database, "Users", user.uid), {
         ...filteredFormData,
-        type: "Personnel",
+        // type: "Personnel",
+        type: filteredFormData.type
       });
     } catch (error: any) {
       console.error(error);

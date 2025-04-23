@@ -8,6 +8,7 @@ import PaginationControl from "../../components/paginations/PaginationControl";
 import AddVehicleModal from "./components/forms/AddVehicleModal";
 import showToast from "../../utilities/toast";
 import EditVehicleModal from "./components/forms/EditVehicleModal";
+import useAuth from "../../components/hooks/useAuth";
 
 const Vehicles = () => {
   // Use vehicle
@@ -29,6 +30,8 @@ const Vehicles = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
   const itemsPerPage = 10;
+
+  const { isSuperAdmin } = useAuth();
 
   // Get unique personnel types and sectors for filters
   const colors = [
@@ -200,9 +203,11 @@ const Vehicles = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Assigned Personnel
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
+                    {isSuperAdmin && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Action
+                      </th>
+                    )}
                   </tr>
                 </thead>
 
@@ -210,7 +215,7 @@ const Vehicles = () => {
                   {currentItems.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={isSuperAdmin ? 6 : 5}
                         className="px-4 py-8 text-center text-gray-500"
                       >
                         No personnel records found matching your criteria
@@ -237,21 +242,21 @@ const Vehicles = () => {
                           {vehicle.plate_number}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {
-                            vehicle.user && vehicle.user.name
-                          }
+                          {vehicle.user && vehicle.user.name}
                         </td>
-                        <td className="px-4 py-3 space-x-3 text-sm text-center">
-                          <button
-                            onClick={() => {
-                              setIsEditModalOpen(true);
-                              handleSelectVehicle(vehicle);
-                            }}
-                            className="text-gray-600 hover:text-gray-800"
-                          >
-                            Edit
-                          </button>
-                        </td>
+                        {isSuperAdmin && (
+                          <td className="px-4 py-3 space-x-3 text-sm text-center">
+                            <button
+                              onClick={() => {
+                                setIsEditModalOpen(true);
+                                handleSelectVehicle(vehicle);
+                              }}
+                              className="text-gray-600 hover:text-gray-800"
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}
@@ -271,22 +276,26 @@ const Vehicles = () => {
         )}
       </div>
 
-      <AddVehicleModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onVehicleAdded={handleVehicleAdd}
-      />
+      {isSuperAdmin && (
+        <>
+          <AddVehicleModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            onVehicleAdded={handleVehicleAdd}
+          />
 
-      {selectedVehicle && (
-        <EditVehicleModal
-          selectedVehicle={selectedVehicle}
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            handleUnselectVehicle();
-            setIsEditModalOpen(false);
-          }}
-          onVehicleEdited={handleUserEdited}
-        />
+          {selectedVehicle && (
+            <EditVehicleModal
+              selectedVehicle={selectedVehicle}
+              isOpen={isEditModalOpen}
+              onClose={() => {
+                handleUnselectVehicle();
+                setIsEditModalOpen(false);
+              }}
+              onVehicleEdited={handleUserEdited}
+            />
+          )}
+        </>
       )}
     </>
   );

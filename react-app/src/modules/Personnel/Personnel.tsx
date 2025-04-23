@@ -7,6 +7,7 @@ import AddUserModal from "./components/forms/AddUserModal";
 import showToast from "../../utilities/toast";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import EditUserModal from "./components/forms/EditUserModal";
+import useAuth from "../../components/hooks/useAuth";
 
 const Personnel = () => {
   const {
@@ -25,6 +26,8 @@ const Personnel = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
   const itemsPerPage = 10;
+
+  const { isSuperAdmin } = useAuth();
 
   useEffect(() => {
     getAllPersonnels();
@@ -162,9 +165,11 @@ const Personnel = () => {
                       Name
                     </th>
                  
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    {isSuperAdmin && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Action
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -189,7 +194,9 @@ const Personnel = () => {
                           </div>
                         </td>
                      
-                        <td className="px-4 py-3 space-x-3 text-sm text-center">
+                        {
+                          isSuperAdmin && (
+                            <td className="px-4 py-3 space-x-3 text-sm text-center">
                           <button
                             onClick={() => {
                               setIsEditModalOpen(true);
@@ -201,6 +208,8 @@ const Personnel = () => {
                           </button>
                          
                         </td>
+                          )
+                        }
                       </tr>
                     ))
                   )}
