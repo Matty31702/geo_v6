@@ -31,7 +31,7 @@ const Vehicles = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
   const itemsPerPage = 10;
 
-  const { userRole, isLoading: authLoading, isSuperAdmin } = useAuth();
+  const { isSuperAdmin } = useAuth();
 
   // Get unique personnel types and sectors for filters
   const colors = [

@@ -54,7 +54,7 @@ const Dashboard = () => {
   // Use the hooks
   const { personnels, getAllPersonnels } = usePersonnel();
   const { vehicles, getAllVehicles } = useVehicle();
-  const { userRole, isLoading: authLoading, isSuperAdmin } = useAuth();
+  const { isSuperAdmin } = useAuth();
 
   // State for calculated stats
   const [stats, setStats] = useState({

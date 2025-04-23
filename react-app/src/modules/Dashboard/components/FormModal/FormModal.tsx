@@ -59,7 +59,7 @@ const FormModal: React.FC<FormModalProps> = ({
   const { addVehicle } = useVehicle();
   
   // Auth hook for role-based authorization
-  const { currentUser, userRole, isLoading: authLoading } = useAuth();
+  const { userRole, isLoading: authLoading } = useAuth();
 
   // Authorization state
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
