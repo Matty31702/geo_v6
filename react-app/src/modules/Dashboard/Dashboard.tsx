@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import CustomHelmet from "../../components/CustomHelmet";
-import { Users, Truck, Clock, Activity, MapPin, Car } from "lucide-react";
+import {
+  Users,
+  Truck,
+  Clock,
+  Activity,
+  MapPin,
+  Car,
+  ShieldAlert,
+} from "lucide-react";
 import usePersonnel from "../../components/hooks/usePersonnel";
 import useVehicle from "../../components/hooks/useVehicle";
 import Header from "./components/Header";
@@ -12,6 +20,7 @@ import LINKS from "../../constants/links";
 import { GEO_FENCE_POLYGON } from "../Monitoring/constants";
 import FormModal from "./components/FormModal";
 import showToast from "../../utilities/toast";
+import useAuth from "../../components/hooks/useAuth";
 
 // Type for latitude/longitude pair
 type LatLngTuple = [number, number];
@@ -40,10 +49,12 @@ const isPointInPolygon = (point: LatLngTuple, polygon: LatLngTuple[]) => {
 const Dashboard = () => {
   // Modal state
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [showAuthError, setShowAuthError] = useState<boolean>(false);
 
   // Use the hooks
   const { personnels, getAllPersonnels } = usePersonnel();
   const { vehicles, getAllVehicles } = useVehicle();
+  const { userRole, isLoading: authLoading, isSuperAdmin } = useAuth();
 
   // State for calculated stats
   const [stats, setStats] = useState({
@@ -63,7 +74,7 @@ const Dashboard = () => {
   useEffect(() => {
     // Skip calculations if data isn't loaded yet
     if (!personnels || !vehicles) return;
-    
+
     // Use empty data array or actual data when available
     const personnelData = personnels?.length ? personnels : [];
     const vehicleData = vehicles?.length ? vehicles : [];
@@ -106,6 +117,23 @@ const Dashboard = () => {
     });
   }, [personnels, vehicles]);
 
+  // Handle adding new personnel/vehicle button click
+  const handleAddButtonClick = () => {
+    // Check if user is a superadmin
+    if (isSuperAdmin) {
+      setIsOpen(true);
+    } else {
+      setShowAuthError(true);
+      // Hide error message after 3 seconds
+      setTimeout(() => {
+        setShowAuthError(false);
+      }, 3000);
+      showToast.error(
+        "Permission denied. Only superadmins can add personnel or vehicles."
+      );
+    }
+  };
+
   // Handle success full object addition
   const handleObjectAdded = (activeTab: string) => {
     // Refresh object list
@@ -126,6 +154,16 @@ const Dashboard = () => {
       <div className="space-y-6">
         {/* Header */}
         <Header />
+
+        {/* Auth Error Banner */}
+        {showAuthError && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-4 flex items-center">
+            <ShieldAlert className="mr-2" size={20} />
+            <span>
+              Permission denied. Only superadmins can add personnel or vehicles.
+            </span>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <StatCardContainer>
@@ -171,7 +209,7 @@ const Dashboard = () => {
             Vehicles
           </Link>
           <button
-            onClick={() => setIsOpen(true)}
+            onClick={handleAddButtonClick}
             className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md flex items-center justify-center"
           >
             <Clock className="mr-2" size={18} />
@@ -194,7 +232,7 @@ const Dashboard = () => {
         </QuickActionContainer>
       </div>
 
-      {/* Form Modal */}
+      {/* Form Modal - Only opens if user is authorized */}
       <FormModal
         isOpen={isOpen}
         personnels={personnels}

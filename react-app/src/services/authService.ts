@@ -19,6 +19,7 @@ const authService = {
   
       if (!querySnapshot.empty) {
         const docSnap = querySnapshot.docs[0];
+        // console.log(docSnap.data())
         return {
           data: { id: docSnap.id, ...docSnap.data() } as T,
           error: null,

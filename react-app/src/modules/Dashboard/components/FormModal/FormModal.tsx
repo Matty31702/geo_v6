@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FormHeader from "../FormHeader";
 import useFormData from "../../../../components/hooks/useFormData";
 import usePersonnel from "../../../../components/hooks/usePersonnel";
+import useAuth from "../../../../components/hooks/useAuth"; // New auth hook
 import {
   validateUserForm,
   validateVehicleForm,
 } from "../../../../utilities/validation";
 import useVehicle from "../../../../components/hooks/useVehicle";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, ShieldAlert } from "lucide-react";
 import { Personnel } from "../../../../types/firestore";
 import FormContainer from "../../../../components/FormContainer/FormContainer";
 
@@ -56,9 +57,22 @@ const FormModal: React.FC<FormModalProps> = ({
   // Use personnel and vehicle hook
   const { addPersonnel } = usePersonnel();
   const { addVehicle } = useVehicle();
+  
+  // Auth hook for role-based authorization
+  const { currentUser, userRole, isLoading: authLoading } = useAuth();
+
+  // Authorization state
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
 
   // Error state
   const [error, setError] = useState<string>("");
+
+  // Check authorization when user data loads
+  useEffect(() => {
+    if (!authLoading && userRole) {
+      setIsAuthorized(userRole === "superadmin");
+    }
+  }, [authLoading, userRole]);
 
   // Personnel Form Data
   const {
@@ -101,6 +115,12 @@ const FormModal: React.FC<FormModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Check authorization first
+    if (!isAuthorized) {
+      setError("You don't have permission to add personnel or vehicles");
+      return;
+    }
+
     let validationError;
 
     if (activeTab === "Personnel") {
@@ -125,18 +145,12 @@ const FormModal: React.FC<FormModalProps> = ({
 
       if (activeTab === "Personnel") {
         // Submit personnel data
-        // console.log("Submitting personnel data:", personnelData);
-        // API call would go here
         await addPersonnel(personnelData);
-
         // Reset form and close modal
         personnelReset();
       } else {
         // Submit vehicle data
-        // console.log("Submitting vehicle data:", vehicleData);
-        // API call would go here
         await addVehicle(vehicleData);
-
         // Reset form and close modal
         vehicleReset();
       }
@@ -156,6 +170,43 @@ const FormModal: React.FC<FormModalProps> = ({
 
   // Check is open
   if (!isOpen) return null;
+
+  // Show authorization error if user is not authorized
+  if (!authLoading && !isAuthorized) {
+    return (
+      <FormContainer>
+        <FormHeader title="Access Denied" error={error} onClose={onClose} />
+        <div className="p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <ShieldAlert size={48} className="text-red-500" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Permission Denied</h3>
+          <p className="text-gray-600 mb-6">
+            Only superadmins can add personnel and vehicles. Contact your system administrator for assistance.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-600 rounded-md text-white hover:bg-gray-700"
+          >
+            Close
+          </button>
+        </div>
+      </FormContainer>
+    );
+  }
+
+  // Show loading indicator while checking auth
+  if (authLoading) {
+    return (
+      <FormContainer>
+        <FormHeader title="Loading" error={error} onClose={onClose} />
+        <div className="p-8 flex items-center justify-center">
+          <Loader2 size={32} className="animate-spin text-blue-600" />
+        </div>
+      </FormContainer>
+    );
+  }
 
   return (
     <FormContainer>
@@ -314,9 +365,10 @@ const FormModal: React.FC<FormModalProps> = ({
               />
             </div>
 
-            {/* <div className="col-span-2 md:col-span-1">
+            {/* Add user role/type field - visible only to superadmin */}
+            <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type*
+                User Role*
               </label>
               <select
                 name="type"
@@ -325,13 +377,12 @@ const FormModal: React.FC<FormModalProps> = ({
                 className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                <option value="">Select type</option>
-                <option value="employee">Employee</option>
+                <option value="">Select role</option>
                 <option value="admin">Admin</option>
-                <option value="contractor">Contractor</option>
-                <option value="visitor">Visitor</option>
+                <option value="Personnel">Personnel</option>
+                <option value="superadmin">Superadmin</option>
               </select>
-            </div> */}
+            </div>
 
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -444,21 +495,6 @@ const FormModal: React.FC<FormModalProps> = ({
                 required
               />
             </div>
-
-            {/* <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assign Personnel*
-              </label>
-              <input
-                type="text"
-                name="user_id"
-                value={vehicleData.user_id}
-                onChange={handleVehicleChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter owner ID"
-                required
-              />
-            </div> */}
 
             <div className="col-span-2 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
