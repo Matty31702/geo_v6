@@ -38,11 +38,12 @@ export const validateEditUserForm = (formData: EditFormDataProps): string => {
   if (!formData.address.trim()) return "Address is required";
   if (!formData.gender) return "Gender is required";
   if (!formData.guardian_name) return "Guardian name is required";
-  if (!formData.guardian_phone_number) return "Guardian phone number is required";
+  if (!formData.guardian_phone_number)
+    return "Guardian phone number is required";
   if (!formData.birthday) return "Birthday is required";
 
   return "";
-}
+};
 
 // Validate user form (post method)
 export const validateUserForm = (formData: UserFormData): string => {
@@ -60,7 +61,16 @@ export const validateUserForm = (formData: UserFormData): string => {
   if (!formData.username) return "Personnel ID is required";
   if (!formData.birthday) return "Birthday is required";
   if (!formData.guardian_name) return "Guardian name is required";
-  if (!formData.guardian_phone_number) return "Guardian phone number is required";
+  if (!formData.guardian_phone_number)
+    return "Guardian phone number is required";
   if (!formData.mark_number) return "Mark Number is required";
+  return "";
+};
+
+// Validate login credentials
+export const validateLoginForm = (userId: string, password: string): string => {
+  if (!userId.trim()) return "User ID is required";
+  if (!password.trim()) return "User ID is required";
+
   return "";
 };
