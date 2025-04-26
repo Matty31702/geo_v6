@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { database } from "../../services/firebase/config";
+import { Activity, FirestoreResponse } from "../../types/firestore";
+import activityService from "../../services/activityService";
 
 const useActivity = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -13,19 +15,15 @@ const useActivity = () => {
     setError(null);
     
     try {
-      // Query activities collection, ordered by date_time in descending order
-      const activitiesQuery = query(
-        collection(database, "Records"),
-        orderBy("date_time", "desc")
-      );
+      const activities: FirestoreResponse<Activity[]> = await activityService.getAllActivities();
+
+      // Set state
+      if(activities.data) {
+        setActivities(activities.data);
+      } else {
+        setError("An error occured while fetching activities");
+      }
       
-      const activitiesSnapshot = await getDocs(activitiesQuery);
-      const activitiesList = activitiesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      
-      setActivities(activitiesList);
     } catch (err) {
       console.error("Error fetching activities: ", err);
       setError("Failed to fetch activities. Please try again later.");

@@ -79,7 +79,7 @@ const personnelService = {
           };
         });
 
-      console.log(personnels);
+      // console.log(personnels);
 
       return { data: personnels, error: null };
     } catch (error: any) {

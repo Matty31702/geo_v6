@@ -5,7 +5,12 @@ import logo from "/images/logo-bg-removed.png";
 import { Eye, EyeClosed } from "lucide-react";
 import authService from "../../services/authService";
 import { User } from "../../types/firestore";
+import { validateLoginForm } from "../../utilities/validation";
 
+/**
+ * Login Page
+ * - A page dedicated to authenticate the guest user. If the user is authenticated then will be redirected to the Dashboad (/).
+ */
 const Login = () => {
   // Password visible state
   const [isHidden, setIsHidden] = useState(true);
@@ -20,12 +25,18 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  /**
+   * Attempt to login the user using their user ID and password
+   * @param e - Prevent redirecting to different page
+   */
   const handleLogin = async (e: any) => {
     e.preventDefault();
     setError("");
-
-    if (!userId || !password) {
-      setError("Please fill in all fields");
+    
+    // Validate userId and password
+    const validationError = validateLoginForm(userId, password);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -50,7 +61,6 @@ const Login = () => {
 
       // Check if user type matches
       const userType = userData.type; // "Personnel" in your case
-      // console.log(userData);
       if (
         (loginType === "admin" && userType !== "admin") ||
         (loginType === "superadmin" && userType !== "superadmin")

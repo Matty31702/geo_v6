@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import FormHeader from "../FormHeader";
-import useFormData from "../../../../components/hooks/useFormData";
-import usePersonnel from "../../../../components/hooks/usePersonnel";
-import useAuth from "../../../../components/hooks/useAuth"; // New auth hook
+import useFormData from "../../../../../components/hooks/useFormData";
+import usePersonnel from "../../../../../components/hooks/usePersonnel";
+import useAuth from "../../../../../components/hooks/useAuth"; // New auth hook
 import {
   validateUserForm,
   validateVehicleForm,
-} from "../../../../utilities/validation";
-import useVehicle from "../../../../components/hooks/useVehicle";
-import { Loader2, Plus, ShieldAlert } from "lucide-react";
-import { Personnel } from "../../../../types/firestore";
-import FormContainer from "../../../../components/FormContainer/FormContainer";
+} from "../../../../../utilities/validation";
+import useVehicle from "../../../../../components/hooks/useVehicle";
+import { Loader2, Plus } from "lucide-react";
+import { Personnel } from "../../../../../types/firestore";
+import FormContainer from "../../../../../components/FormContainer/FormContainer";
+import PermissionModal from "../PermissionModal";
+import AuthLoading from "../AuthLoading";
+import TabNavigation from "../TabNavigation/TabNavigation";
 
 interface PersonnelFormDataProps {
   name: string;
@@ -49,7 +52,9 @@ const FormModal: React.FC<FormModalProps> = ({
   onClose,
 }) => {
   // Active Tab
-  const [activeTab, setActiveTab] = useState<string>("Personnel");
+  const [activeTab, setActiveTab] = useState<"Personnel" | "Vehicle">(
+    "Personnel"
+  );
 
   // Loading State
   const [loading, setLoading] = useState<boolean>(false);
@@ -57,7 +62,7 @@ const FormModal: React.FC<FormModalProps> = ({
   // Use personnel and vehicle hook
   const { addPersonnel } = usePersonnel();
   const { addVehicle } = useVehicle();
-  
+
   // Auth hook for role-based authorization
   const { userRole, isLoading: authLoading } = useAuth();
 
@@ -121,18 +126,18 @@ const FormModal: React.FC<FormModalProps> = ({
       return;
     }
 
-    let validationError;
+    let validationError; // Initalize validation error
 
     if (activeTab === "Personnel") {
+      // Validate user form data
       validationError = validateUserForm(personnelData);
-
       if (validationError) {
         setError(validationError);
         return;
       }
     } else {
+      // Validate vehicle form data
       validationError = validateVehicleForm(vehicleData);
-
       if (validationError) {
         setError(validationError);
         return;
@@ -143,6 +148,7 @@ const FormModal: React.FC<FormModalProps> = ({
       // Set Loading
       setLoading(true);
 
+      // Check the active tab (Personnel | Vehicle)
       if (activeTab === "Personnel") {
         // Submit personnel data
         await addPersonnel(personnelData);
@@ -173,39 +179,12 @@ const FormModal: React.FC<FormModalProps> = ({
 
   // Show authorization error if user is not authorized
   if (!authLoading && !isAuthorized) {
-    return (
-      <FormContainer>
-        <FormHeader title="Access Denied" error={error} onClose={onClose} />
-        <div className="p-8 text-center">
-          <div className="flex justify-center mb-4">
-            <ShieldAlert size={48} className="text-red-500" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">Permission Denied</h3>
-          <p className="text-gray-600 mb-6">
-            Only superadmins can add personnel and vehicles. Contact your system administrator for assistance.
-          </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-600 rounded-md text-white hover:bg-gray-700"
-          >
-            Close
-          </button>
-        </div>
-      </FormContainer>
-    );
+    return <PermissionModal error={error} onClose={onClose} />;
   }
 
   // Show loading indicator while checking auth
   if (authLoading) {
-    return (
-      <FormContainer>
-        <FormHeader title="Loading" error={error} onClose={onClose} />
-        <div className="p-8 flex items-center justify-center">
-          <Loader2 size={32} className="animate-spin text-blue-600" />
-        </div>
-      </FormContainer>
-    );
+    return <AuthLoading error={error} onClose={onClose} />;
   }
 
   return (
@@ -213,30 +192,7 @@ const FormModal: React.FC<FormModalProps> = ({
       <FormHeader title={`Add ${activeTab}`} error={error} onClose={onClose} />
 
       {/* Tab Navigation */}
-      <div className="flex border-b">
-        <button
-          type="button"
-          className={`flex-1 py-3 px-4 text-center font-medium ${
-            activeTab === "Personnel"
-              ? "text-blue-600 border-b-2 border-blue-600"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("Personnel")}
-        >
-          Personnel
-        </button>
-        <button
-          type="button"
-          className={`flex-1 py-3 px-4 text-center font-medium ${
-            activeTab === "Vehicle"
-              ? "text-blue-600 border-b-2 border-blue-600"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("Vehicle")}
-        >
-          Vehicle
-        </button>
-      </div>
+      <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <form
         onSubmit={handleSubmit}
@@ -245,110 +201,99 @@ const FormModal: React.FC<FormModalProps> = ({
         {activeTab === "Personnel" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Personnel Form Fields */}
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name*
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={personnelData.name}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter full name"
-                required
-              />
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username*
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={personnelData.username}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter username"
-                required
-              />
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number*
-              </label>
-              <input
-                type="tel"
-                name="phone_number"
-                value={personnelData.phone_number}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter phone number"
-                required
-              />
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mark Number
-              </label>
-              <input
-                type="text"
-                name="mark_number"
-                value={personnelData.mark_number}
-                onChange={handlePersonnelChange}
-                maxLength={3} // Limits to 3 characters
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter 3-digit mark number"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address*
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={personnelData.email}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter email address"
-                required
-              />
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password*
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={personnelData.password}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter password"
-                required
-              />
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password*
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={personnelData.confirmPassword}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Confirm password"
-                required
-              />
-            </div>
+            {[
+              {
+                label: "Full Name*",
+                type: "text",
+                name: "name",
+                value: personnelData.name,
+                onChange: handlePersonnelChange,
+                is_required: true,
+                max_length: 100,
+                placeholder: "Enter full name",
+              },
+              {
+                label: "Username*",
+                type: "text",
+                name: "username",
+                value: personnelData.username,
+                onChange: handlePersonnelChange,
+                is_required: true,
+                max_length: 20,
+                placeholder: "Enter username",
+              },
+              {
+                label: "Phone Number*",
+                type: "tel",
+                name: "phone_number",
+                value: personnelData.phone_number,
+                onChange: handlePersonnelChange,
+                is_required: true,
+                max_length: 15,
+                placeholder: "Enter phone number",
+              },
+              {
+                label: "Mark Number*",
+                type: "text",
+                name: "mark_number",
+                value: personnelData.mark_number,
+                onChange: handlePersonnelChange,
+                is_required: true,
+                max_length: 3,
+                placeholder: "Enter 3-digit mark number",
+              },
+              {
+                label: "Email address*",
+                type: "email",
+                name: "email",
+                value: personnelData.email,
+                onChange: handlePersonnelChange,
+                is_required: true,
+                max_length: 100,
+                placeholder: "Enter email address",
+              },
+              {
+                label: "Password*",
+                type: "password",
+                name: "password",
+                value: personnelData.password,
+                onChange: handlePersonnelChange,
+                is_required: true,
+                max_length: 100,
+                placeholder: "Enter password",
+              },
+              {
+                label: "Confirm Password*",
+                type: "password",
+                name: "confirmPassword",
+                value: personnelData.confirmPassword,
+                onChange: handlePersonnelChange,
+                is_required: true,
+                max_length: 100,
+                placeholder: "Confirm password",
+              },
+            ].map((data, index) => (
+              <div
+                key={index}
+                className={`col-span-2 ${
+                  data.type === "email" ? "" : "md:col-span-1"
+                }`}
+              >
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {data.label}
+                </label>
+                <input
+                  type={data.type}
+                  name={data.name}
+                  value={data.value}
+                  onChange={data.onChange}
+                  className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={data.placeholder}
+                  maxLength={data.max_length}
+                  required={data.is_required}
+                />
+              </div>
+            ))}
 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -402,49 +347,51 @@ const FormModal: React.FC<FormModalProps> = ({
               </select>
             </div>
 
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Guardian Name*
-              </label>
-              <input
-                type="text"
-                name="guardian_name"
-                value={personnelData.guardian_name}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter guardian name"
-                required
-              />
-            </div>
+            {[
+              {
+                label: "Guardian Name*",
+                type: "text",
+                name: "guardian_name",
+                value: personnelData.guardian_name,
+                onChange: handlePersonnelChange,
+                placeholder: "Enter guardian name",
+                is_required: true,
+              },
+              {
+                label: "Guardian Phone Number*",
+                type: "tel",
+                name: "guardian_phone_number",
+                value: personnelData.guardian_phone_number,
+                onChange: handlePersonnelChange,
+                placeholder: "Enter guardian phone number",
+                is_required: true,
+              },
+              {
+                label: "Birthday*",
+                type: "date",
+                name: "birthday",
+                value: personnelData.birthday,
+                onChange: handlePersonnelChange,
+                placeholder: "",
+                is_required: true,
+              },
+            ].map((data, index) => (
+              <div key={index} className="col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {data.label}
+                </label>
 
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Guardian Phone Number*
-              </label>
-              <input
-                type="tel"
-                name="guardian_phone_number"
-                value={personnelData.guardian_phone_number}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter guardian phone number"
-                required
-              />
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Birthday*
-              </label>
-              <input
-                type="date"
-                name="birthday"
-                value={personnelData.birthday}
-                onChange={handlePersonnelChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
+                <input
+                  type={data.type}
+                  name={data.name}
+                  value={data.value}
+                  onChange={handlePersonnelChange}
+                  className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={data.placeholder}
+                  required={data.is_required}
+                />
+              </div>
+            ))}
           </div>
         )}
 

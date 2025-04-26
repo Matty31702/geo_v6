@@ -7,6 +7,12 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Auth Provider Context
+ * A provider that wraps up the RouterProvider (main.tsx) for verifying if the user is authenticated or not.
+ * @param param0 
+ * @returns {ReactNode}
+ */
 const AuthProvider = ({ children }: AuthProviderProps) => {
   
   useEffect(() => {

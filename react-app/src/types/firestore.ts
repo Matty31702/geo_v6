@@ -59,9 +59,13 @@ export interface Vehicle {
 
 export interface Activity {
   id: string;
-  user: User;
+  user: Personnel;
+  user_id: string;
   status: string;
   entry_time: string; // This is date time
+  date_time: string;
+  lng: string;
+  lat: string;
 }
 
 export interface FirestoreResponse<T> {
