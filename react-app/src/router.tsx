@@ -1,3 +1,7 @@
+/**
+ * Router configuration for  the application
+ * Sets up protected routes for authenticated users and guest routes
+ */
 import { createBrowserRouter, Navigate, redirect } from "react-router-dom";
 import GuestLayout from "./layouts/GuestLayout";
 import Login from "./modules/Login";
@@ -10,7 +14,11 @@ import Monitoring from "./modules/Monitoring";
 import Dashboard from "./modules/Dashboard";
 import LINKS from "./constants/links";
 
-// Authentication loader function
+/**
+ * Authentication loader for protected routes
+ * Checks if the user is authenticated and redirects to login if not
+ * @returns {Promise<null|Response>} Redirect response or null to continue
+ */
 const authLoader = async () => {
   return new Promise((resolve) => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -24,7 +32,11 @@ const authLoader = async () => {
   });
 };
 
-// Guest routes loader
+/**
+ * Guest routes loader
+ * Prevents authenticated users from accessing guest routes
+ * @returns {Promise<null|Response>} Redirect response or null to continue
+ */
 const guestLoader = async () => {
   return new Promise((resolve) => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -38,12 +50,17 @@ const guestLoader = async () => {
   });
 };
 
-// Create router
+/**
+ * Application router configuration
+ * Defines two main layouts:
+ * 1. DefaultLayout - For authenticated users (protected routes)
+ * 2. GuestLayout - For unauthenticated users
+ */
 const router = createBrowserRouter([
   {
     path: "/",
     element: <DefaultLayout />,
-    loader: authLoader,
+    loader: authLoader, // Protect all child routes
     children: [
       {
         index: true,
@@ -82,11 +99,10 @@ const router = createBrowserRouter([
       {
         path: LINKS.LOGIN,
         element: <Login />,
-        loader: guestLoader,
+        loader: guestLoader, // Prevent authenticated users from seeing login
       },
     ],
   },
 ]);
 
-// Exporting router
 export default router;
