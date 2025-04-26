@@ -14,6 +14,7 @@ const Activities = () => {
   /* const [searchTerm, setSearchTerm] = useState(""); */
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL"); // New status filter state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -24,11 +25,11 @@ const Activities = () => {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [startDate, endDate]);
+  }, [startDate, endDate, statusFilter]); // Added statusFilter to dependencies
 
-  // Filter activities based on search and date filters
+  // Filter activities based on search, date filters, and status filter
   const filteredActivities =
-    activities?.filter((record: any) => {
+    activities?.filter((record: Activity) => {
       // Search filter
       const matchesSearch =
         record.user_id?.toLowerCase() ||
@@ -54,7 +55,13 @@ const Activities = () => {
         }
       }
 
-      return matchesSearch && matchesDate;
+      // Status filter
+      let matchesStatus = true;
+      if (statusFilter !== "ALL") {
+        matchesStatus = record.status === statusFilter;
+      }
+
+      return matchesSearch && matchesDate && matchesStatus;
     }) || [];
 
   // Pagination
@@ -160,23 +167,46 @@ const Activities = () => {
 
         {/* Search and Filter Section */}
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="flex justify-between items-center gap-4">
-            {/* Search input */}
-            {/* <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search
-                  size={20}
-                  className="absolute left-3 top-2.5 text-gray-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Search by user ID or status..."
-                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+          <div className="flex flex-wrap justify-between items-end gap-4">
+            {/* Status filter buttons */}
+            <div className="flex items-center space-x-2">
+              <label className="block text-sm text-gray-500">Status:</label>
+              <div className="inline-flex rounded-md shadow-sm">
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm font-medium rounded-l-md ${
+                    statusFilter === "ALL"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                  }`}
+                  onClick={() => setStatusFilter("ALL")}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm font-medium ${
+                    statusFilter === "IN"
+                      ? "bg-green-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border-t border-b border-gray-300"
+                  }`}
+                  onClick={() => setStatusFilter("IN")}
+                >
+                  In
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm font-medium rounded-r-md ${
+                    statusFilter === "OUT"
+                      ? "bg-red-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                  }`}
+                  onClick={() => setStatusFilter("OUT")}
+                >
+                  Out
+                </button>
               </div>
-            </div> */}
+            </div>
 
             {/* Date filters */}
             <div className="flex gap-2">
@@ -205,7 +235,7 @@ const Activities = () => {
             </div>
 
             {/* Export button */}
-            <div className="flex items-end">
+            <div>
               <button
                 onClick={exportToCSV}
                 className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center hover:bg-green-700"
@@ -265,14 +295,14 @@ const Activities = () => {
                   {currentItems.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="px-4 py-8 text-center text-gray-500"
                       >
                         No activities found matching your criteria
                       </td>
                     </tr>
                   ) : (
-                    currentItems.map((record: Activity, index: any) => (
+                    currentItems.map((record: Activity, index: number) => (
                       <tr key={record.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {(currentPage - 1) * itemsPerPage + index + 1}
