@@ -1,20 +1,16 @@
 import { useEffect, useState } from "react";
-import {  RefreshCw, Download } from "lucide-react";
+import { RefreshCw, Download } from "lucide-react";
 import CustomHelmet from "../../components/CustomHelmet";
 import HeaderSection from "../../components/HeaderSection";
 import showToast from "../../utilities/toast";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import { format } from "date-fns";
 import useActivity from "../../components/hooks/useActivity";
+import { Activity } from "../../types/firestore";
 
-const Activity = () => {
-  const {
-    loading,
-    error,
-    activities,
-    getAllActivities,
-  } = useActivity();
-  
+const Activities = () => {
+  const { loading, error, activities, getAllActivities } = useActivity();
+
   /* const [searchTerm, setSearchTerm] = useState(""); */
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -31,35 +27,35 @@ const Activity = () => {
   }, [startDate, endDate]);
 
   // Filter activities based on search and date filters
-  const filteredActivities = activities?.filter((record: any) => {
-    // Search filter
-    const matchesSearch =
-      
-      record.user_id?.toLowerCase() ||
-      (record.status && record.status.toLowerCase());
+  const filteredActivities =
+    activities?.filter((record: any) => {
+      // Search filter
+      const matchesSearch =
+        record.user_id?.toLowerCase() ||
+        (record.status && record.status.toLowerCase());
 
-    // Date filter
-    let matchesDate = true;
-    if (startDate || endDate) {
-      const recordDate = record.date_time ? new Date(record.date_time) : null;
-      
-      if (recordDate) {
-        if (startDate) {
-          const start = new Date(startDate);
-          start.setHours(0, 0, 0, 0);
-          if (recordDate < start) matchesDate = false;
-        }
-        
-        if (endDate) {
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59, 999);
-          if (recordDate > end) matchesDate = false;
+      // Date filter
+      let matchesDate = true;
+      if (startDate || endDate) {
+        const recordDate = record.date_time ? new Date(record.date_time) : null;
+
+        if (recordDate) {
+          if (startDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            if (recordDate < start) matchesDate = false;
+          }
+
+          if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            if (recordDate > end) matchesDate = false;
+          }
         }
       }
-    }
 
-    return matchesSearch && matchesDate;
-  }) || [];
+      return matchesSearch && matchesDate;
+    }) || [];
 
   // Pagination
   const lastPage = Math.ceil(filteredActivities.length / itemsPerPage);
@@ -82,34 +78,46 @@ const Activity = () => {
     }
 
     // Define CSV headers
-    const headers = ["ID", "User ID", "Date & Time", "Latitude", "Longitude", "Status"];
-    
+    const headers = [
+      "User ID",
+      "Name",
+      "Date & Time",
+      "Latitude",
+      "Longitude",
+      "Status",
+    ];
+
     // Create CSV content
     const csvContent = [
       headers.join(","),
-      ...filteredActivities.map((record: any) => [
-        record.id || "",
-        record.user_id || "",
-        record.date_time || "",
-        record.lat || "",
-        record.lng || "",
-        record.status || ""
-      ].join(","))
+      ...filteredActivities.map((record: Activity) =>
+        [
+          record.user.mark_number || "",
+          record.user.name || "",
+          record.date_time || "",
+          record.lat || "",
+          record.lng || "",
+          record.status || "",
+        ].join(",")
+      ),
     ].join("\n");
-    
+
     // Create and download the CSV file
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute("href", url);
-    link.setAttribute("download", `activities_export_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute(
+      "download",
+      `activities_export_${new Date().toISOString().split("T")[0]}.csv`
+    );
     link.style.visibility = "hidden";
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     showToast.success("Activities exported successfully!");
   };
 
@@ -169,11 +177,13 @@ const Activity = () => {
                 />
               </div>
             </div> */}
-            
+
             {/* Date filters */}
             <div className="flex gap-2">
               <div>
-                <label className="block text-sm text-gray-500 mb-1">Start Date</label>
+                <label className="block text-sm text-gray-500 mb-1">
+                  Start Date
+                </label>
                 <input
                   type="date"
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -182,7 +192,9 @@ const Activity = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">End Date</label>
+                <label className="block text-sm text-gray-500 mb-1">
+                  End Date
+                </label>
                 <input
                   type="date"
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -191,7 +203,7 @@ const Activity = () => {
                 />
               </div>
             </div>
-            
+
             {/* Export button */}
             <div className="flex items-end">
               <button
@@ -236,6 +248,9 @@ const Activity = () => {
                       User ID
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date & Time
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -257,19 +272,22 @@ const Activity = () => {
                       </td>
                     </tr>
                   ) : (
-                    currentItems.map((record: any, index: any) => (
+                    currentItems.map((record: Activity, index: any) => (
                       <tr key={record.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                           {(currentPage - 1) * itemsPerPage + index + 1}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                          {record.user_id || "-"}
+                          {record.user.mark_number || "-"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {record.user.name || "-"}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                           {formatDateTime(record.date_time)}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                          {record.lat && record.lng 
+                          {record.lat && record.lng
                             ? `${record.lat}, ${record.lng}`
                             : "-"}
                         </td>
@@ -308,4 +326,4 @@ const Activity = () => {
   );
 };
 
-export default Activity;
+export default Activities;

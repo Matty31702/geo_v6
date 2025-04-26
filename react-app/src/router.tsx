@@ -8,11 +8,11 @@ import Login from "./modules/Login";
 import DefaultLayout from "./layouts/DefaultLayout";
 import { auth } from "./services/firebase/config";
 import Personnel from "./modules/Personnel";
-import Activity from "./modules/Activity";
 import Vehicles from "./modules/Vehicles";
 import Monitoring from "./modules/Monitoring";
 import Dashboard from "./modules/Dashboard";
 import LINKS from "./constants/links";
+import Activities from "./modules/Activities";
 
 /**
  * Authentication loader for protected routes
@@ -84,7 +84,7 @@ const router = createBrowserRouter([
       },
       {
         path: LINKS.ACTIVITIES,
-        element: <Activity />
+        element: <Activities />
       },
     ]
   },
