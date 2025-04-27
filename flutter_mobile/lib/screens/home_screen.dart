@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geobound/services/auth_service.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,6 +9,7 @@ import 'package:geobound/models/geofence_model.dart';
 import 'package:geobound/widgets/status_bar.dart';
 import 'package:geobound/widgets/location_info.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart'
     as fmctp;
 
@@ -33,6 +36,12 @@ class _HomeScreenState extends State<HomeScreen> {
   String _currentAttendanceStatus = "Unknown";
   bool _isRecordingAttendance = false;
 
+  // Add these new variables to track time spent in geofence
+  DateTime? _geofenceEntryTime;
+  double _totalHoursInToday = 0.0;
+  Map<String, dynamic>? _currentRecord;
+  String? _currentRecordId;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _hoursUpdateTimer?.cancel();
     _locationService.dispose();
     super.dispose();
   }
@@ -289,12 +299,34 @@ class _HomeScreenState extends State<HomeScreen> {
           (a, b) =>
               (b['date_time'] as String).compareTo(a['date_time'] as String),
         );
+
+        // Store the current record and its ID for later updates
+        _currentRecord = todayDocs.first.data();
+        _currentRecordId = todayDocs.first.id;
+
         setState(() {
           _currentAttendanceStatus = todayDocs.first['status'];
+
+          // Retrieve the existing hours_in value if it exists
+          _totalHoursInToday = (todayDocs.first['hours_in'] ?? 0.0).toDouble();
+
+          // If we're currently in the geofence and status is "IN", restore entry time
+          if (_isInsideGeofence && todayDocs.first['status'] == "IN") {
+            final lastEntryTimeStr = todayDocs.first['entry_time'];
+            if (lastEntryTimeStr != null) {
+              _geofenceEntryTime = DateTime.parse(lastEntryTimeStr);
+            } else {
+              // If entry_time is missing but status is IN, set it to now
+              _geofenceEntryTime = DateTime.now();
+            }
+          }
         });
       } else {
         setState(() {
           _currentAttendanceStatus = "Not Recorded";
+          _totalHoursInToday = 0.0;
+          _currentRecord = null;
+          _currentRecordId = null;
         });
       }
     } catch (e) {
@@ -302,6 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Modified to handle hours calculation
   Future<void> _updateAttendanceStatus() async {
     // Don't update if already recording to prevent duplicate records
     if (_isRecordingAttendance) return;
@@ -317,50 +350,103 @@ class _HomeScreenState extends State<HomeScreen> {
       return; // Can't update without location data
     }
 
-    // Only update if geofence status changes
+    // Calculate if geofence status changes
+    final bool wasInsideGeofence = _isInsideGeofence;
+    _checkIfInGeofence(); // Update _isInsideGeofence based on current location
     final newStatus = _isInsideGeofence ? "IN" : "OUT";
-    if (newStatus == _currentAttendanceStatus) return;
+
+    final bool statusChanged = (newStatus != _currentAttendanceStatus);
+    final bool geofenceTransition = (wasInsideGeofence != _isInsideGeofence);
+
+    if (!statusChanged && !geofenceTransition) {
+      // Neither the recorded status nor our physical position has changed
+      return;
+    }
 
     setState(() {
       _isRecordingAttendance = true;
     });
 
     try {
-      // Get current date
+      // Get current date and time
       final now = DateTime.now();
       final today = now.toIso8601String().split('T')[0];
+
+      // Calculate hours spent in geofence if we're leaving
+      if (wasInsideGeofence &&
+          !_isInsideGeofence &&
+          _geofenceEntryTime != null) {
+        // Exiting the geofence - calculate hours spent
+        final exitTime = now;
+        final duration = exitTime.difference(_geofenceEntryTime!);
+        final hoursSpent = duration.inMinutes / 60.0;
+
+        // Add to the total hours for today
+        _totalHoursInToday += hoursSpent;
+
+        // Reset entry time
+        _geofenceEntryTime = null;
+
+        debugPrint(
+          "Exiting geofence. Hours spent: $hoursSpent. Total today: $_totalHoursInToday",
+        );
+      } else if (!wasInsideGeofence && _isInsideGeofence) {
+        // Entering the geofence - record entry time
+        _geofenceEntryTime = now;
+        debugPrint("Entering geofence at: ${now.toIso8601String()}");
+      }
+
+      // Check if user has an associated vehicle
+      String? vehicleId;
+      final vehiclesSnapshot =
+          await _firestore
+              .collection('Vehicles')
+              .where('user_id', isEqualTo: userId)
+              .limit(1)
+              .get();
+
+      // If vehicle exists, get its ID
+      if (vehiclesSnapshot.docs.isNotEmpty) {
+        vehicleId = vehiclesSnapshot.docs.first.id;
+      }
+
+      // Format hours with 2 decimal places
+      final formattedHours = _totalHoursInToday.toStringAsFixed(2);
 
       // Prepare location data
       final locationData = {
         'status': newStatus,
         'date_time': now.toIso8601String(),
-        'lat': currentLocation.latitude, // Add latitude
-        'lng': currentLocation.longitude, // Add longitude
+        'lat': currentLocation.latitude,
+        'lng': currentLocation.longitude,
         'isLoggedIn': true,
+        'hours_in': _totalHoursInToday, // Add hours_in field
+        // Store entry time if we're inside the geofence
+        if (_isInsideGeofence && _geofenceEntryTime != null)
+          'entry_time': _geofenceEntryTime!.toIso8601String(),
       };
 
-      // Check if record for today exists
-      final snapshot =
-          await _firestore
-              .collection('Records')
-              .where('user_id', isEqualTo: userId)
-              .where('date_time', isGreaterThanOrEqualTo: today)
-              .where('date_time', isLessThan: '${today}T23:59:59')
-              .limit(1)
-              .get();
+      // Add vehicle_id to the record if it exists
+      if (vehicleId != null) {
+        locationData['vehicle_id'] = vehicleId;
+      }
 
-      if (snapshot.docs.isNotEmpty) {
+      // Update existing record or create a new one
+      if (_currentRecordId != null) {
         // Update existing record
         await _firestore
             .collection('Records')
-            .doc(snapshot.docs.first.id)
+            .doc(_currentRecordId)
             .update(locationData);
       } else {
         // Create new record for today
-        await _firestore.collection('Records').add({
+        final docRef = await _firestore.collection('Records').add({
           'user_id': userId,
           ...locationData, // Spread the location data
         });
+
+        // Save the record ID for future updates
+        _currentRecordId = docRef.id;
       }
 
       setState(() {
@@ -376,7 +462,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.white,
               ),
               const SizedBox(width: 8),
-              Text('Attendance status updated: $newStatus'),
+              Text('Attendance updated: $newStatus (${formattedHours}h today)'),
             ],
           ),
           backgroundColor: _isInsideGeofence ? Colors.green : Colors.orange,
@@ -396,6 +482,48 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isRecordingAttendance = false;
       });
+    }
+  }
+
+  // Add a periodic timer to update hours when staying inside the geofence
+  Timer? _hoursUpdateTimer;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Start a timer to periodically update hours_in while inside the geofence
+    _hoursUpdateTimer?.cancel();
+    _hoursUpdateTimer = Timer.periodic(const Duration(minutes: 5), (timer) {
+      if (_isInsideGeofence && _geofenceEntryTime != null) {
+        _updateHoursInRecord();
+      }
+    });
+  }
+
+  // Method to update hours in Firestore without changing status
+  Future<void> _updateHoursInRecord() async {
+    if (!_isInsideGeofence ||
+        _geofenceEntryTime == null ||
+        _currentRecordId == null) {
+      return;
+    }
+
+    try {
+      final now = DateTime.now();
+      final currentSessionHours =
+          now.difference(_geofenceEntryTime!).inMinutes / 60.0;
+      final temporaryTotalHours = _totalHoursInToday + currentSessionHours;
+
+      // Update only the hours_in field
+      await _firestore.collection('Records').doc(_currentRecordId).update({
+        'hours_in': temporaryTotalHours,
+        'last_updated': now.toIso8601String(),
+      });
+
+      debugPrint("Updated hours_in (periodic): $temporaryTotalHours hours");
+    } catch (e) {
+      debugPrint("Error updating hours_in: $e");
     }
   }
 
@@ -471,6 +599,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Format hours for display
+    final formattedHours = _totalHoursInToday.toStringAsFixed(2);
+
+    // Calculate ongoing session hours if currently inside
+    String ongoingHours = "0.00";
+    if (_isInsideGeofence && _geofenceEntryTime != null) {
+      final currentDuration = DateTime.now().difference(_geofenceEntryTime!);
+      final currentHours = currentDuration.inMinutes / 60.0;
+      ongoingHours = currentHours.toStringAsFixed(2);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Police Regional Office 10'),
@@ -504,7 +643,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     statusMessage: _statusMessage,
                   ),
 
-                  // Attendance status indicator
+                  // Attendance status indicator with hours
                   Container(
                     padding: const EdgeInsets.symmetric(
                       vertical: 8,
@@ -516,26 +655,46 @@ class _HomeScreenState extends State<HomeScreen> {
                             : _currentAttendanceStatus == "OUT"
                             ? Colors.orange.withOpacity(0.2)
                             : Colors.grey.withOpacity(0.2),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          _currentAttendanceStatus == "IN"
-                              ? Icons.check_circle
-                              : _currentAttendanceStatus == "OUT"
-                              ? Icons.info_outline
-                              : Icons.help_outline,
-                          color:
+                        Row(
+                          children: [
+                            Icon(
                               _currentAttendanceStatus == "IN"
-                                  ? Colors.green
+                                  ? Icons.check_circle
                                   : _currentAttendanceStatus == "OUT"
-                                  ? Colors.orange
-                                  : Colors.grey,
+                                  ? Icons.info_outline
+                                  : Icons.help_outline,
+                              color:
+                                  _currentAttendanceStatus == "IN"
+                                      ? Colors.green
+                                      : _currentAttendanceStatus == "OUT"
+                                      ? Colors.orange
+                                      : Colors.grey,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Current Status: $_currentAttendanceStatus',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(height: 4),
                         Text(
-                          'Current Status: $_currentAttendanceStatus',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          'Total Hours Today: $formattedHours h',
+                          style: const TextStyle(fontSize: 12),
                         ),
+                        if (_isInsideGeofence && _geofenceEntryTime != null)
+                          Text(
+                            'Current Session: $ongoingHours h (since ${DateFormat('HH:mm').format(_geofenceEntryTime!)})',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.green,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -544,7 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (_locationService.currentLocation != null)
                     LocationInfo(location: _locationService.currentLocation!),
 
-                  // Map view
+                  // Map view (existing code...)
                   Expanded(
                     child: Stack(
                       children: [
