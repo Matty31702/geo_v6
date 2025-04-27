@@ -281,6 +281,12 @@ const Activities = () => {
                       Name
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vehicle
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Plate Number
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date & Time
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -289,6 +295,13 @@ const Activities = () => {
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
+                    {
+                      statusFilter === 'OUT' && (
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Hours In
+                        </th>
+                      )
+                    }
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -313,6 +326,16 @@ const Activities = () => {
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                           {record.user.name || "-"}
                         </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {
+                            record.vehicle ? `${record.vehicle.model} - ${record.vehicle.color}` : "-"
+                          }
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {
+                            record.vehicle ? record.vehicle.plate_number : "-"
+                          }
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                           {formatDateTime(record.date_time)}
                         </td>
@@ -334,6 +357,15 @@ const Activities = () => {
                             {record.status || "UNKNOWN"}
                           </span>
                         </td>
+                        {
+                          statusFilter === 'OUT' && (
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {
+                            record.hours_in ? `${record.hours_in} hrs` : '-'
+                          }
+                        </td>
+                          )
+                        }
                       </tr>
                     ))
                   )}
