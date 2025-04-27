@@ -64,7 +64,8 @@ export interface Activity {
   vehicle_id?: string;
   vehicle?: Vehicle;
   status: string;
-  entry_time: string; // This is date time
+  entry_time?: string; // This is date time
+  exit_time?: string; // This is date time
   date_time: string;
   hours_in?: string | number;
   lng: string;

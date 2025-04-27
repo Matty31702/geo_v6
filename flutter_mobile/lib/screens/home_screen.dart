@@ -265,6 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Also update the _fetchAttendanceStatus method to handle exit_time
   Future<void> _fetchAttendanceStatus() async {
     try {
       final userId = _authService.currentUser?.uid;
@@ -319,6 +320,9 @@ class _HomeScreenState extends State<HomeScreen> {
               // If entry_time is missing but status is IN, set it to now
               _geofenceEntryTime = DateTime.now();
             }
+          } else {
+            // Clear entry time if status is OUT and set exit_time if needed
+            _geofenceEntryTime = null;
           }
         });
       } else {
@@ -327,6 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _totalHoursInToday = 0.0;
           _currentRecord = null;
           _currentRecordId = null;
+          _geofenceEntryTime = null;
         });
       }
     } catch (e) {
@@ -384,9 +389,6 @@ class _HomeScreenState extends State<HomeScreen> {
         // Add to the total hours for today
         _totalHoursInToday += hoursSpent;
 
-        // Reset entry time
-        _geofenceEntryTime = null;
-
         debugPrint(
           "Exiting geofence. Hours spent: $hoursSpent. Total today: $_totalHoursInToday",
         );
@@ -421,10 +423,27 @@ class _HomeScreenState extends State<HomeScreen> {
         'lng': currentLocation.longitude,
         'isLoggedIn': true,
         'hours_in': _totalHoursInToday, // Add hours_in field
-        // Store entry time if we're inside the geofence
-        if (_isInsideGeofence && _geofenceEntryTime != null)
-          'entry_time': _geofenceEntryTime!.toIso8601String(),
       };
+
+      // Handle entry_time and exit_time fields
+      if (_isInsideGeofence) {
+        // When entering the geofence
+        locationData['entry_time'] = _geofenceEntryTime!.toIso8601String();
+
+        // Clear any previous exit_time if re-entering
+        locationData['exit_time'] = null;
+      } else {
+        // When exiting the geofence
+        locationData['exit_time'] = now.toIso8601String();
+
+        // Keep the previous entry_time for reference
+        if (_geofenceEntryTime != null) {
+          locationData['entry_time'] = _geofenceEntryTime!.toIso8601String();
+        }
+
+        // Reset entry time after recording
+        _geofenceEntryTime = null;
+      }
 
       // Add vehicle_id to the record if it exists
       if (vehicleId != null) {
@@ -462,7 +481,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.white,
               ),
               const SizedBox(width: 8),
-              Text('Attendance updated: $newStatus (${formattedHours}h today)'),
+              Text(
+                _isInsideGeofence
+                    ? 'Checked IN at ${_formatTime(now)} (${formattedHours}h today)'
+                    : 'Checked OUT at ${_formatTime(now)} (${formattedHours}h today)',
+              ),
             ],
           ),
           backgroundColor: _isInsideGeofence ? Colors.green : Colors.orange,
@@ -485,6 +508,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Helper method to format time for display
+  String _formatTime(DateTime dateTime) {
+    return DateFormat('HH:mm:ss').format(dateTime);
+  }
+
   // Add a periodic timer to update hours when staying inside the geofence
   Timer? _hoursUpdateTimer;
 
@@ -502,6 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Method to update hours in Firestore without changing status
+  // Update the _updateHoursInRecord method to handle partial sessions
   Future<void> _updateHoursInRecord() async {
     if (!_isInsideGeofence ||
         _geofenceEntryTime == null ||
@@ -515,10 +544,12 @@ class _HomeScreenState extends State<HomeScreen> {
           now.difference(_geofenceEntryTime!).inMinutes / 60.0;
       final temporaryTotalHours = _totalHoursInToday + currentSessionHours;
 
-      // Update only the hours_in field
+      // Update hours_in and timestamps but don't modify permanent total yet
       await _firestore.collection('Records').doc(_currentRecordId).update({
         'hours_in': temporaryTotalHours,
         'last_updated': now.toIso8601String(),
+        // Don't update exit_time since user is still inside
+        // We're just keeping track of ongoing hours
       });
 
       debugPrint("Updated hours_in (periodic): $temporaryTotalHours hours");
