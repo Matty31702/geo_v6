@@ -286,12 +286,26 @@ const Activities = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Plate Number
                     </th>
+                    {
+                      statusFilter === 'IN' && (
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Entry Time
+                    </th>
+                      )
+                    }
+                    {
+                      statusFilter === 'OUT' && (
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Exit Time
+                    </th>
+                      )
+                    }
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date & Time
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Location
-                    </th>
+                    </th> */}
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
@@ -321,29 +335,47 @@ const Activities = () => {
                           {(currentPage - 1) * itemsPerPage + index + 1}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                          {record.user.mark_number || "-"}
+                          {record.user.mark_number || "N/A"}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                          {record.user.name || "-"}
+                          {record.user.name || "N/A"}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
                           {
-                            record.vehicle ? `${record.vehicle.model} - ${record.vehicle.color}` : "-"
+                            record.vehicle ? `${record.vehicle.model} - ${record.vehicle.color}` : "N/A"
                           }
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
                           {
-                            record.vehicle ? record.vehicle.plate_number : "-"
+                            record.vehicle ? record.vehicle.plate_number : "N/A"
                           }
                         </td>
+                        {
+                          statusFilter === "IN" && (
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
+                              {
+                                record.entry_time ? record.entry_time : 'N/A'
+                              }
+                            </td>
+                          )
+                        }
+                        {
+                          statusFilter === "OUT" && (
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
+                              {
+                                record.exit_time ? record.exit_time : 'N/A'
+                              }
+                            </td>
+                          )
+                        }
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                           {formatDateTime(record.date_time)}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {/* <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                           {record.lat && record.lng
                             ? `${record.lat}, ${record.lng}`
                             : "-"}
-                        </td>
+                        </td> */}
                         <td className="px-4 py-3 text-center">
                           <span
                             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -361,7 +393,7 @@ const Activities = () => {
                           statusFilter === 'OUT' && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
                           {
-                            record.hours_in ? `${record.hours_in} hrs` : '-'
+                            record.hours_in ? `${record.hours_in} hrs` : 'N/A'
                           }
                         </td>
                           )
