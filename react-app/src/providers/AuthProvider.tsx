@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../services/firebase/config";
+import { auth } from "../core/config/firebaseConfig";
 import LINKS from "../constants/links";
 
 interface AuthProviderProps {

@@ -7,7 +7,7 @@ import {
   query,
 } from "firebase/firestore";
 import { Activity, FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
-import { database } from "./firebase/config";
+import { database } from "../core/config/firebaseConfig";
 
 const activityService = {
   // Get all activities

@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { RouterProvider } from "react-router-dom";
-import router from "./router.tsx";
+import router from "./core/router.tsx";
 import { HelmetProvider } from "react-helmet-async";
 import AuthProvider from "./providers/AuthProvider.tsx";
 import "react-toastify/dist/ReactToastify.css";

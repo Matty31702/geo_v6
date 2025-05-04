@@ -3,16 +3,16 @@
  * Sets up protected routes for authenticated users and guest routes
  */
 import { createBrowserRouter, Navigate, redirect } from "react-router-dom";
-import GuestLayout from "./layouts/GuestLayout";
-import Login from "./modules/Login";
-import DefaultLayout from "./layouts/DefaultLayout";
-import { auth } from "./services/firebase/config";
-import Personnel from "./modules/Personnel";
-import Vehicles from "./modules/Vehicles";
-import Monitoring from "./modules/Monitoring";
-import Dashboard from "./modules/Dashboard";
-import LINKS from "./constants/links";
-import Activities from "./modules/Activities";
+import GuestLayout from "../features/auth/components/GuestLayout";
+import Login from "../features/auth/pages/Login";
+import DefaultLayout from "../layouts/DefaultLayout";
+import { auth } from "./config/firebaseConfig";
+import Personnel from "../modules/Personnel";
+import Vehicles from "../modules/Vehicles";
+import Monitoring from "../modules/Monitoring";
+import Dashboard from "../modules/Dashboard";
+import LINKS from "../constants/links";
+import Activities from "../modules/Activities";
 
 /**
  * Authentication loader for protected routes
@@ -60,7 +60,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <DefaultLayout />,
-    loader: authLoader, // Protect all child routes
+    // loader: authLoader, // Protect all child routes
     children: [
       {
         index: true,

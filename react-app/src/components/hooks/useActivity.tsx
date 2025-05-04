@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
-import { database } from "../../services/firebase/config";
+import { database } from "../../core/config/firebaseConfig";
 import { Activity, FirestoreResponse } from "../../types/firestore";
 import activityService from "../../services/activityService";
 

@@ -1,7 +1,7 @@
 import { LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "firebase/auth";
-import { auth } from "../../services/firebase/config";
+import { auth } from "../../core/config/firebaseConfig";
 
 interface NavbarProps {
   title: string;

@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
-import { auth, database } from "./firebase/config";
+import { auth, database } from "../core/config/firebaseConfig";
 import {
   createUserWithEmailAndPassword,
   User,
