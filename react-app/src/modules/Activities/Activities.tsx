@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { RefreshCw, Download } from "lucide-react";
-import CustomHelmet from "../../components/CustomHelmet";
-import HeaderSection from "../../components/HeaderSection";
+import CustomHelmet from "../../shared/components/CustomHelmet";
+import HeaderSection from "../../shared/components/HeaderSection";
 import showToast from "../../utilities/toast";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import { format } from "date-fns";

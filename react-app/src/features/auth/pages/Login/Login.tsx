@@ -1,5 +1,5 @@
 import { useState } from "react";
-import CustomHelmet from "../../../../components/CustomHelmet";
+import CustomHelmet from "../../../../shared/components/CustomHelmet";
 import LoginForm from "../../components/LoginForm";
 import Logo from "../../components/Logo";
 

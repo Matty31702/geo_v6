@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import CustomHelmet from "../../components/CustomHelmet";
-import HeaderSection from "../../components/HeaderSection";
+import CustomHelmet from "../../shared/components/CustomHelmet";
+import HeaderSection from "../../shared/components/HeaderSection";
 import useVehicle from "../../components/hooks/useVehicle";
 import { PenTool, RefreshCw, Search } from "lucide-react";
 import { Vehicle } from "../../types/firestore";

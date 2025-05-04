@@ -68,9 +68,15 @@ export const useAuth = () => {
     }
   };
 
+  // Attempt to logout user
+  const logout = async (): Promise<void> => {
+    await authApi.logout();
+  }
+
   return {
     loading,
     error,
     loginWithIdAndPassword,
+    logout,
   };
 };

@@ -14,7 +14,7 @@ import { Personnel, Vehicle } from "../../types/firestore";
 import MapHeader from "./components/MapHeader";
 import CustomMapContainer from "./components/CustomMapContainer";
 import MapLegendContainer from "./components/MapLegendContainer";
-import CustomHelmet from "../../components/CustomHelmet";
+import CustomHelmet from "../../shared/components/CustomHelmet";
 import useVehicle from "../../components/hooks/useVehicle";
 import MapFooter from "./components/MapFooter";
 import ViewTableModal from "./components/ViewTableModal";
