@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
-import usePersonnel from "../../../components/hooks/usePersonnel";
-import { Search, RefreshCw } from "lucide-react";
+import usePersonnel from "../../dashboard/hooks/usePersonnel";
+import { RefreshCw } from "lucide-react";
 import CustomHelmet from "../../../shared/components/CustomHelmet";
 import HeaderSection from "../../../shared/components/HeaderSection";
 import showToast from "../../../utilities/toast";
-import PaginationControl from "../../../components/paginations/PaginationControl";
+
 import EditUserModal from "../components/EditUserModal";
-import useAuth from "../../../components/hooks/useAuth";
+import useAuth from "../../dashboard/hooks/useAuth";
 import AddUserModal from "../components/AddUserModal";
+import { getFilteredPersonnel } from "../utils/filter";
+import PaginationControl from "../../../shared/components/PaginationControl";
+import usePagination from "../../../shared/hooks/usePagination";
+import StatCard from "../components/StatCard/StatCard";
+import SearchFilterSection from "../components/SearchFilterSection";
+import Table from "../components/Table";
 
 const Personnel = () => {
   const {
@@ -19,12 +25,13 @@ const Personnel = () => {
     getAllPersonnels,
     setSelectedPersonnel,
   } = usePersonnel();
-  const [searchTerm, setSearchTerm] = useState("");
-  // const [filterType, setFilterType] = useState("");
-  // const [filterSector, setFilterSector] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
-  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
+
+  // Use pagination
+  const { searchTerm, currentPage, handlePageChange, handleSearchChange } =
+    usePagination();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const itemsPerPage = 10;
 
   const { isSuperAdmin } = useAuth();
@@ -33,29 +40,14 @@ const Personnel = () => {
     getAllPersonnels();
   }, []);
 
-  // Reset pagination when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
-  // Filter personnel based on search and filters
-  const filteredPersonnel =
-    personnels?.filter((person) => {
-      const matchesSearch =
-        !searchTerm ||
-        person.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.phone_number?.includes(searchTerm);
-
-      return matchesSearch;
-    }) || [];
+  // Get filtered personnel based on search and filters
+  const filteredPersonnel = getFilteredPersonnel(searchTerm, personnels);
 
   // Summary statistics
   const totalPersonnel = personnels?.length || 0;
 
   // Calculate personnel counts by type
   const personnelByType: { [key: string]: number } = {};
-
   personnels?.forEach((person) => {
     if (person.type) {
       personnelByType[person.type] = (personnelByType[person.type] || 0) + 1;
@@ -63,7 +55,7 @@ const Personnel = () => {
   });
 
   // Pagination
-  const lastPage = Math.ceil(filteredPersonnel.length / itemsPerPage);
+  const totalItems = filteredPersonnel.length;
   const currentItems = filteredPersonnel.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -102,36 +94,14 @@ const Personnel = () => {
           handleRefresh={handleRefresh}
         />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-sm text-gray-500 mb-1">Total Personnels</h3>
-            <p className="text-2xl font-bold text-gray-800">{totalPersonnel}</p>
-          </div>
-      
-        </div>
+        {/* Stat Card */}
+        <StatCard title="Total Personnels" totalCount={totalPersonnel} />
 
         {/* Search and Filter Section */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search
-                  size={20}
-                  className="absolute left-3 top-2.5 text-gray-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Search by name, email or number..."
-                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-            
-          </div>
-        </div>
+        <SearchFilterSection
+          searchTerm={searchTerm}
+          handleSearchChange={handleSearchChange}
+        />
 
         {/* Table Section */}
         {loading ? (
@@ -154,49 +124,45 @@ const Personnel = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    #
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  {isSuperAdmin && (
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentItems.length === 0 ? (
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      #
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                 
-                    {isSuperAdmin && (
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Action
-                      </th>
-                    )}
+                    <td
+                      colSpan={9}
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      No personnel records found matching your criteria
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentItems.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={9}
-                        className="px-4 py-8 text-center text-gray-500"
-                      >
-                        No personnel records found matching your criteria
+                ) : (
+                  currentItems.map((person, index) => (
+                    <tr key={person.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
-                    </tr>
-                  ) : (
-                    currentItems.map((person, index) => (
-                      <tr key={person.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {(currentPage - 1) * itemsPerPage + index + 1}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {person.name || "-"}
-                          </div>
-                        </td>
-                     
-                        {
-                          isSuperAdmin && (
-                            <td className="px-4 py-3 space-x-3 text-sm text-center">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {person.name || "-"}
+                        </div>
+                      </td>
+                      {isSuperAdmin && (
+                        <td className="px-4 py-3 space-x-3 text-sm text-center">
                           <button
                             onClick={() => {
                               setIsEditModalOpen(true);
@@ -206,24 +172,20 @@ const Personnel = () => {
                           >
                             Edit
                           </button>
-                         
                         </td>
-                          )
-                        }
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
 
-            {/* Pagination Controls */}
+            {/* Refactored Pagination Control */}
             <PaginationControl
-              filteredArray={filteredPersonnel}
+              totalItems={totalItems}
               currentPage={currentPage}
-              lastPage={lastPage}
               itemsPerPage={itemsPerPage}
-              setCurrentPage={setCurrentPage}
+              onPageChange={handlePageChange}
             />
           </div>
         )}
@@ -241,7 +203,7 @@ const Personnel = () => {
           isOpen={isEditModalOpen}
           onClose={() => {
             setSelectedPersonnel(null);
-            setIsEditModalOpen(false)
+            setIsEditModalOpen(false);
           }}
           onUserEdited={handleUserEdited}
         />

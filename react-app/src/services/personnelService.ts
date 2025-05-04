@@ -118,7 +118,7 @@ const personnelService = {
       await setDoc(doc(database, "Users", user.uid), {
         ...filteredFormData,
         // type: "Personnel",
-        type: filteredFormData.type
+        type: filteredFormData.type,
       });
     } catch (error: any) {
       console.error(error);

@@ -1,4 +1,4 @@
-import { GeofencePolygon, PoliceHQ } from "./types";
+import { GeofencePolygon, PoliceHQ } from "../../modules/Monitoring/types";
 
 // Define the polygon points (replace with actual coordinates of your shape)
 // GeoJSON LineString converted to polygon (as [lat, lng] pairs)

@@ -3,7 +3,7 @@ import { Personnel } from "../../../../types/firestore";
 import useFormData from "../../../../components/hooks/useFormData";
 import FormContainer from "../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../components/_forms/FormHeader";
-import usePersonnel from "../../../../components/hooks/usePersonnel";
+import usePersonnel from "../../../dashboard/hooks/usePersonnel";
 import { Edit, Loader2 } from "lucide-react";
 import {
   validateEditUserForm,

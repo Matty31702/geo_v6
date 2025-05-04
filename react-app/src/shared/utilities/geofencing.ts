@@ -2,7 +2,10 @@
 export type LatLngTuple = [number, number];
 
 // Function to check if a point is inside a polygon (ray casting algorithm)
-export const isPointInPolygon = (point: LatLngTuple, polygon: LatLngTuple[]) => {
+export const isPointInPolygon = (
+  point: LatLngTuple,
+  polygon: LatLngTuple[]
+) => {
   const x = point[0],
     y = point[1];
   let inside = false;

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FirestoreResponse, Vehicle } from "../../types/firestore";
+import { FirestoreResponse, Vehicle } from "../../../types/firestore";
 import vehicleService, {
   EditFormDataProps,
-} from "../../services/vehicleService";
-import { FormDataProps } from "../../modules/Vehicles/components/forms/AddVehicleModal/AddVehicleModal";
+} from "../../../services/vehicleService";
+import { FormDataProps } from "../../../modules/Vehicles/components/forms/AddVehicleModal/AddVehicleModal";
 
 const useVehicle = () => {
   // Use loading

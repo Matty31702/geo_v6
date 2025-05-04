@@ -2,7 +2,7 @@ import { Plus, Loader2 } from "lucide-react";
 import { validateUserForm } from "../../../../utilities/validation";
 import useFormData from "../../../../components/hooks/useFormData";
 import { FormDataProps } from "../../../../services/personnelService";
-import usePersonnel from "../../../../components/hooks/usePersonnel";
+import usePersonnel from "../../../dashboard/hooks/usePersonnel";
 import FormContainer from "../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../components/_forms/FormHeader";
 
@@ -78,51 +78,51 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Name */}
-          <div className="col-span-full md:col-span-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter full name"
-              required
-            />
-          </div>
+            <div className="col-span-full md:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter full name"
+                required
+              />
+            </div>
 
-          {/* Username/Personnel ID */}
-          <div className="col-span-full md:col-span-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Personnel ID
-            </label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter personnel ID"
-            />
-          </div>
+            {/* Username/Personnel ID */}
+            <div className="col-span-full md:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Personnel ID
+              </label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter personnel ID"
+              />
+            </div>
 
-          {/*  Mark Number */}
-          <div className="col-span-full md:col-span-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mark Number
-            </label>
-            <input
-              type="text"
-              name="mark_number"
-              value={formData.mark_number}
-              onChange={handleChange}
-              maxLength={3} // Limits to 3 characters
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter 3-digit mark number"
-            />
-          </div>
+            {/*  Mark Number */}
+            <div className="col-span-full md:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mark Number
+              </label>
+              <input
+                type="text"
+                name="mark_number"
+                value={formData.mark_number}
+                onChange={handleChange}
+                maxLength={3} // Limits to 3 characters
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter 3-digit mark number"
+              />
+            </div>
           </div>
 
           {/* Email */}

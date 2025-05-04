@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 import { Personnel } from "../../../../types/firestore";
-import usePersonnel from "../../../../components/hooks/usePersonnel";
-import useVehicle from "../../../../components/hooks/useVehicle";
-import useAuth from "../../../../components/hooks/useAuth";
+import usePersonnel from "../../hooks/usePersonnel";
+import useVehicle from "../../hooks/useVehicle";
+import useAuth from "../../hooks/useAuth";
 import useFormData from "../../../../components/hooks/useFormData";
-import { validateUserForm, validateVehicleForm } from "../../../../utilities/validation";
 import PermissionModal from "../PermissionModal";
-import AuthLoading from "../AuthLoading";
 import FormContainer from "../../../../components/_forms/FormContainer";
-import FormHeader from "../FormHeader";
 import TabNavigation from "../TabNavigation/TabNavigation";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 
-interface PersonnelFormDataProps {
+export interface PersonnelFormDataProps {
   name: string;
   username: string;
   phone_number: string;
@@ -53,11 +50,8 @@ const FormModal: React.FC<FormModalProps> = ({
     "Personnel"
   );
 
-  // Loading State
-  const [loading, setLoading] = useState<boolean>(false);
-
   // Use personnel and vehicle hook
-  const { addPersonnel } = usePersonnel();
+  const { loading, error, addPersonnel } = usePersonnel();
   const { addVehicle } = useVehicle();
 
   // Auth hook for role-based authorization
@@ -65,9 +59,6 @@ const FormModal: React.FC<FormModalProps> = ({
 
   // Authorization state
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
-
-  // Error state
-  const [error, setError] = useState<string>("");
 
   // Check authorization when user data loads
   useEffect(() => {
@@ -91,7 +82,7 @@ const FormModal: React.FC<FormModalProps> = ({
       password: "",
       confirmPassword: "",
       address: "",
-      type: "",
+      type: "Personnel",
       gender: "",
       guardian_name: "",
       guardian_phone_number: "",
@@ -119,55 +110,38 @@ const FormModal: React.FC<FormModalProps> = ({
 
     // Check authorization first
     if (!isAuthorized) {
-      setError("You don't have permission to add personnel or vehicles");
+      alert("You don't have permission to add personnel or vehicles");
       return;
     }
 
-    let validationError; // Initalize validation error
-
-    if (activeTab === "Personnel") {
-      // Validate user form data
-      validationError = validateUserForm(personnelData);
-      if (validationError) {
-        setError(validationError);
-        return;
-      }
-    } else {
-      // Validate vehicle form data
-      validationError = validateVehicleForm(vehicleData);
-      if (validationError) {
-        setError(validationError);
-        return;
-      }
-    }
-
     try {
-      // Set Loading
-      setLoading(true);
-
       // Check the active tab (Personnel | Vehicle)
       if (activeTab === "Personnel") {
         // Submit personnel data
         await addPersonnel(personnelData);
         // Reset form and close modal
         personnelReset();
-      } else {
+
+        // Close modal on success
+        onClose();
+
+        if (onObjectAdded) onObjectAdded(activeTab);
+      } else if (activeTab === "Vehicle") {
         // Submit vehicle data
         await addVehicle(vehicleData);
         // Reset form and close modal
         vehicleReset();
+
+        // Close modal on success
+        onClose();
+
+        if (onObjectAdded) onObjectAdded(activeTab);
       }
 
       // Notify parent component of success
-      if (onObjectAdded) onObjectAdded(activeTab);
-
-      // Close modal on success
-      onClose();
+      /* if (onObjectAdded) onObjectAdded(activeTab); */
     } catch (err) {
-      setError("An error occurred while saving data");
-      console.error(err);
-    } finally {
-      setLoading(false);
+      alert("An error occured while saving data");
     }
   };
 
@@ -176,17 +150,20 @@ const FormModal: React.FC<FormModalProps> = ({
 
   // Show authorization error if user is not authorized
   if (!authLoading && !isAuthorized) {
-    return <PermissionModal error={error} onClose={onClose} />;
-  }
-
-  // Show loading indicator while checking auth
-  if (authLoading) {
-    return <AuthLoading error={error} onClose={onClose} />;
+    return <PermissionModal onClose={onClose} />;
   }
 
   return (
     <FormContainer>
-      <FormHeader title={`Add ${activeTab}`} error={error} onClose={onClose} />
+      <div className="flex justify-between items-center p-4 border-b">
+        <h2 className="text-xl font-semibold text-gray-800">{`Add ${activeTab}`}</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
       {/* Tab Navigation */}
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { database } from "../../core/config/firebaseConfig";
+import { database } from "../../../core/config/firebaseConfig";
 
 interface AuthUser extends User {
   type?: string;

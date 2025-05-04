@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FirestoreResponse, Personnel } from "../../types/firestore";
+import { FirestoreResponse, Personnel } from "../../../types/firestore";
 import personnelService, {
   EditFormDataProps,
   FormDataProps,
-} from "../../services/personnelService";
+} from "../../../services/personnelService";
 
 // Use personnel hook
 const usePersonnel = () => {

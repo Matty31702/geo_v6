@@ -1,20 +1,23 @@
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, X } from "lucide-react";
 import FormContainer from "../../../../shared/components/FormContainer/FormContainer";
-import FormHeader from "../FormHeader";
 import React from "react";
 
 interface PermissionModalProps {
-  error: string;
   onClose: () => void;
 }
 
-const PermissionModal: React.FC<PermissionModalProps> = ({
-  error,
-  onClose,
-}) => {
+const PermissionModal: React.FC<PermissionModalProps> = ({ onClose }) => {
   return (
     <FormContainer>
-      <FormHeader title="Access Denied" error={error} onClose={onClose} />
+      <div className="flex justify-between items-center p-4 border-b">
+        <h2 className="text-xl font-semibold text-gray-800">Access Denied</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+        >
+          <X size={20} />
+        </button>
+      </div>
       <div className="p-8 text-center">
         <div className="flex justify-center mb-4">
           <ShieldAlert size={48} className="text-red-500" />

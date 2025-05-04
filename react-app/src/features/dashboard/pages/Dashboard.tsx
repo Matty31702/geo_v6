@@ -9,19 +9,18 @@ import {
   Car,
   ShieldAlert,
 } from "lucide-react";
-import usePersonnel from "../../../components/hooks/usePersonnel";
-import useVehicle from "../../../components/hooks/useVehicle";
+import usePersonnel from "../hooks/usePersonnel";
+import useVehicle from "../hooks/useVehicle";
 import Header from "../components/Header";
 import StatCardContainer from "../components/StatCardContainer";
 import StatCard from "../components/StatCard";
 import QuickActionContainer from "../components/QuickActionContainer";
 import { Link } from "react-router-dom";
 import LINKS from "../../../core/constants/links";
-import { GEO_FENCE_POLYGON } from "../../../modules/Monitoring/constants";
 import showToast from "../../../utilities/toast";
-import useAuth from "../../../components/hooks/useAuth";
-import { isPointInPolygon, LatLngTuple } from "../../../utilities/geofencing";
+import useAuth from "../hooks/useAuth";
 import FormModal from "../components/FormModal";
+import { getTotalPersonnelInsideGeofence, getTotalPersonnelInsideGeofenceOnline, getTotalVehicleInsideGeofence } from "../utils/count";
 
 const Dashboard = () => {
   // Modal state
@@ -57,47 +56,15 @@ const Dashboard = () => {
     const personnelData = personnels?.length ? personnels : [];
     const vehicleData = vehicles?.length ? vehicles : [];
 
-    // Get geofence coordinates properly typed
-    const geofenceCoordinates = GEO_FENCE_POLYGON.coordinates as LatLngTuple[];
-
     // Calculate personnel inside geofence
-    let personnelInsideCount = 0;
-    personnelData.forEach((person) => {
-      if (person.lat && person.lng && person.lat !== 0 && person.lng !== 0) {
-        const personCoords: LatLngTuple = [person.lat, person.lng];
-        const isInside = isPointInPolygon(personCoords, geofenceCoordinates);
-        if (isInside) {
-          personnelInsideCount++;
-        }
-      }
-    });
+    const personnelInsideCount = getTotalPersonnelInsideGeofence(personnelData);
 
     // Calculate personnel inside geofence those that are online
-    let personnelInsideOnlineCount = 0;
-    personnelData.forEach((person) => {
-      if (person.lat && person.lng && person.lat !== 0 && person.lng !== 0 && person.isLoggedIn) {
-        const personCoords: LatLngTuple = [person.lat, person.lng];
-        const isInside = isPointInPolygon(personCoords, geofenceCoordinates);
-        if (isInside) {
-          personnelInsideOnlineCount++;
-        }
-      }
-    })
+    const personnelInsideOnlineCount = getTotalPersonnelInsideGeofenceOnline(personnelData);
 
     // Calculate vehicles inside geofence
-    let vehiclesInsideCount = 0;
-    vehicleData.forEach((vehicle) => {
-      // Handle both 'lng' and 'long' property names
-      const longitude = vehicle.lng || vehicle.long;
-      if (vehicle.lat && longitude && vehicle.lat !== 0 && longitude !== 0) {
-        const vehicleCoords: LatLngTuple = [vehicle.lat, longitude];
-        const isInside = isPointInPolygon(vehicleCoords, geofenceCoordinates);
-        if (isInside) {
-          vehiclesInsideCount++;
-        }
-      }
-    });
-
+    const vehiclesInsideCount = getTotalVehicleInsideGeofence(vehicleData);
+    
     // Update stats
     setStats({
       totalPersonnel: personnelData.length,
@@ -158,17 +125,6 @@ const Dashboard = () => {
 
         {/* Stats Cards */}
         <StatCardContainer>
-          {/* <StatCard>
-            <div>
-              <p className="text-gray-500 text-sm">Personnel Inside Geofence</p>
-              <h2 className="text-3xl font-bold text-indigo-700">
-                {stats.personnelInside} / {stats.totalPersonnel}
-              </h2>
-            </div>
-            <div className="p-3 bg-indigo-100 rounded-full">
-              <Users className="text-indigo-700" size={24} />
-            </div>
-          </StatCard> */}
 
           <StatCard>
             <div>
