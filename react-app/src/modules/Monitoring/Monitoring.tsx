@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
-import usePersonnel from "../../components/hooks/usePersonnel";
+import usePersonnel from "../../features/dashboard/hooks/usePersonnel";
 import "leaflet/dist/leaflet.css";
-import { GEO_FENCE_POLYGON, POLICE_HQ } from "./constants";
+import { GEO_FENCE_POLYGON, POLICE_HQ } from "../../shared/constants/geofence";
 import { GeofenceCenter, GeofencePolygon } from "./types";
 import {
   getAllMarkers,
@@ -14,8 +14,8 @@ import { Personnel, Vehicle } from "../../types/firestore";
 import MapHeader from "./components/MapHeader";
 import CustomMapContainer from "./components/CustomMapContainer";
 import MapLegendContainer from "./components/MapLegendContainer";
-import CustomHelmet from "../../components/CustomHelmet";
-import useVehicle from "../../components/hooks/useVehicle";
+import CustomHelmet from "../../shared/components/CustomHelmet";
+import useVehicle from "../../features/dashboard/hooks/useVehicle";
 import MapFooter from "./components/MapFooter";
 import ViewTableModal from "./components/ViewTableModal";
 

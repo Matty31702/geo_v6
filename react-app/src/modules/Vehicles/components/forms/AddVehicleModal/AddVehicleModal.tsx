@@ -1,7 +1,7 @@
 import { Loader2, Plus } from "lucide-react";
 import useFormData from "../../../../../components/hooks/useFormData";
 import { validateVehicleForm } from "../../../../../utilities/validation";
-import useVehicle from "../../../../../components/hooks/useVehicle";
+import useVehicle from "../../../../../features/dashboard/hooks/useVehicle";
 import FormContainer from "../../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../../components/_forms/FormHeader";
 

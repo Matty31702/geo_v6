@@ -1,6 +1,6 @@
 import React from "react";
-import FormContainer from "../../../../components/FormContainer/FormContainer";
-import FormHeader from "../../../../components/FormHeader";
+import FormContainer from "../../../../shared/components/FormContainer/FormContainer";
+import FormHeader from "../../../../shared/components/FormHeader";
 import { GeofencePolygon } from "../../types";
 import { Personnel, Vehicle } from "../../../../types/firestore";
 import { isPointInPolygon } from "../../utilities/geofencing";

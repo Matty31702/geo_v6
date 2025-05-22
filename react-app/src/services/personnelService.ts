@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
-import { auth, database } from "./firebase/config";
+import { auth, database } from "../core/config/firebaseConfig";
 import {
   createUserWithEmailAndPassword,
   User,
@@ -118,7 +118,7 @@ const personnelService = {
       await setDoc(doc(database, "Users", user.uid), {
         ...filteredFormData,
         // type: "Personnel",
-        type: filteredFormData.type
+        type: filteredFormData.type,
       });
     } catch (error: any) {
       console.error(error);

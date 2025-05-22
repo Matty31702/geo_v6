@@ -2,7 +2,7 @@ import { Edit, Loader2 } from "lucide-react";
 import FormContainer from "../../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../../components/_forms/FormHeader";
 import useFormData from "../../../../../components/hooks/useFormData";
-import useVehicle from "../../../../../components/hooks/useVehicle";
+import useVehicle from "../../../../../features/dashboard/hooks/useVehicle";
 import { Vehicle } from "../../../../../types/firestore";
 import { validateVehicleForm } from "../../../../../utilities/validation";
 

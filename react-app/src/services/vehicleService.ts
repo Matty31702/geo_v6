@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
-import { database } from "./firebase/config";
+import { database } from "../core/config/firebaseConfig";
 import { FormDataProps } from "../modules/Vehicles/components/forms/AddVehicleModal/AddVehicleModal";
 
 export interface EditFormDataProps {
