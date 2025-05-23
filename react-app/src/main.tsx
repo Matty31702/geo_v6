@@ -8,6 +8,12 @@ import AuthProvider from "./providers/AuthProvider.tsx";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
+/**
+ * Context object used for managing Helmet state, typically for server-side rendering (SSR).
+ * This object can be passed to HelmetProvider to collect and render head tags on the server.
+ *
+ * @see https://github.com/nfl/react-helmet#server-usage
+ */
 const helmetContext = {};
 
 createRoot(document.getElementById("root")!).render(

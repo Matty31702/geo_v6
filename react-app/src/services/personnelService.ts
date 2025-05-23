@@ -1,12 +1,23 @@
-import { collection, doc, getDocs, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
-import { auth, database } from "../core/config/firebaseConfig";
+import { auth, database, firebaseConfig } from "../core/config/firebaseConfig";
 import {
   createUserWithEmailAndPassword,
+  getAuth,
   User,
   UserCredential,
 } from "firebase/auth";
 import omit from "../utilities/omit";
+import { initializeApp } from "firebase/app";
+import showToast from "../utilities/toast";
 
 export interface FormDataProps {
   id?: string;
@@ -47,6 +58,10 @@ interface CustomUserCredential {
   error: string | null;
 }
 
+// Create secondary app for user creation
+const secondaryApp = initializeApp(firebaseConfig, "secondary");
+const secondaryAuth = getAuth(secondaryApp);
+
 // Personnel service
 const personnelService = {
   // Handle fetching all personnels
@@ -54,6 +69,7 @@ const personnelService = {
     FirestoreResponse<(Personnel & { vehicle?: Vehicle })[]>
   > {
     try {
+      // Get all users and vehicles
       const usersSnapshot = await getDocs(collection(database, "Users"));
       const vehiclesSnapshot = await getDocs(collection(database, "Vehicles"));
 
@@ -77,9 +93,18 @@ const personnelService = {
             ...personnel,
             vehicle: assignedVehicle || undefined,
           };
+        })
+        .sort((a, b) => {
+          const aTime = a.created_at
+            ? a.created_at.toDate?.()?.getTime?.() ??
+              new Date(a.created_at).getTime()
+            : 0;
+          const bTime = b.created_at
+            ? b.created_at.toDate?.()?.getTime?.() ??
+              new Date(b.created_at).getTime()
+            : 0;
+          return bTime - aTime; // Descending: newest first, unknown last
         });
-
-      // console.log(personnels);
 
       return { data: personnels, error: null };
     } catch (error: any) {
@@ -93,14 +118,16 @@ const personnelService = {
     password: string
   ): Promise<CustomUserCredential> {
     try {
-      // Create user in Firebase Authentication
+      // Use secondary auth instance
       const userCredential = await createUserWithEmailAndPassword(
-        auth,
+        secondaryAuth,
         email,
         password
       );
 
-      // Return value
+      // Sign out from secondary app to avoid confusion
+      await secondaryAuth.signOut();
+
       return { data: userCredential, error: null };
     } catch (error: any) {
       console.error(error);
@@ -114,12 +141,23 @@ const personnelService = {
     const filteredFormData = omit(formData, ["password", "confirmPassword"]);
 
     try {
-      // Add user to Firestore
+      // Add user to Firestore with a created_at timestamp
       await setDoc(doc(database, "Users", user.uid), {
         ...filteredFormData,
-        // type: "Personnel",
         type: filteredFormData.type,
+        created_at: serverTimestamp(), // Add this line
       });
+
+      if (filteredFormData.type === "Personnel") {
+        // Show success message or notification if needed
+        showToast.success("Successfully created a new personnel!");
+      } else if (filteredFormData.type === "superadmin") {
+        // Show success message or notification if needed
+        showToast.success("Successfully created a new super admin!");
+      } else {
+        // Show success message or notification if needed
+        showToast.success("Successfully created a new admin!");
+      }
     } catch (error: any) {
       console.error(error);
     }

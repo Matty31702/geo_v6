@@ -20,7 +20,11 @@ import LINKS from "../../../core/constants/links";
 import showToast from "../../../utilities/toast";
 import useAuth from "../hooks/useAuth";
 import FormModal from "../components/FormModal";
-import { getTotalPersonnelInsideGeofence, getTotalPersonnelInsideGeofenceOnline, getTotalVehicleInsideGeofence } from "../utils/count";
+import {
+  getTotalPersonnelInsideGeofence,
+  getTotalPersonnelInsideGeofenceOnline,
+  getTotalVehicleInsideGeofence,
+} from "../utils/count";
 
 const Dashboard = () => {
   // Modal state
@@ -60,11 +64,12 @@ const Dashboard = () => {
     const personnelInsideCount = getTotalPersonnelInsideGeofence(personnelData);
 
     // Calculate personnel inside geofence those that are online
-    const personnelInsideOnlineCount = getTotalPersonnelInsideGeofenceOnline(personnelData);
+    const personnelInsideOnlineCount =
+      getTotalPersonnelInsideGeofenceOnline(personnelData);
 
     // Calculate vehicles inside geofence
     const vehiclesInsideCount = getTotalVehicleInsideGeofence(vehicleData);
-    
+
     // Update stats
     setStats({
       totalPersonnel: personnelData.length,
@@ -97,9 +102,6 @@ const Dashboard = () => {
     // Refresh object list
     if (activeTab === "Personnel") {
       getAllPersonnels();
-
-      // Show success message or notification if needed
-      showToast.success("Successfully created a new personnel!");
     } else {
       getAllVehicles();
       showToast.success("Successfully created a new vehicle!");
@@ -125,10 +127,11 @@ const Dashboard = () => {
 
         {/* Stats Cards */}
         <StatCardContainer>
-
           <StatCard>
             <div>
-              <p className="text-gray-500 text-sm">Personnel Inside Geofence (Online)</p>
+              <p className="text-gray-500 text-sm">
+                Personnel Inside Geofence (Online)
+              </p>
               <h2 className="text-3xl font-bold text-blue-700">
                 {stats.personnelInsideOnline} / {stats.totalPersonnel}
               </h2>
@@ -149,8 +152,6 @@ const Dashboard = () => {
               <Truck className="text-blue-700" size={24} />
             </div>
           </StatCard>
-
-          
         </StatCardContainer>
 
         {/* Main Content (Quick Actions) */}

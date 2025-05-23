@@ -10,12 +10,14 @@ const usePersonnel = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [personnels, setPersonnels] = useState<Personnel[]>([]);
   const [error, setError] = useState<string>("");
-  const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | null>(null);
+  const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | null>(
+    null
+  );
 
   // Handling select personnel
   const handleSelectPersonnel = (personnel: Personnel) => {
     setSelectedPersonnel(personnel);
-  }
+  };
 
   // Silent data fetch - doesn't set loading state
   const getAllPersonnels = async () => {

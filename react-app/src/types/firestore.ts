@@ -28,7 +28,7 @@ export interface Personnel {
   dateTime: {
     seconds: number;
     nanoseconds: number;
-  },
+  };
   address: string;
   lng: number;
   guardian_name: string;
@@ -39,6 +39,7 @@ export interface Personnel {
   isLoggedIn: boolean;
   vehicle?: Vehicle;
   username: string;
+  created_at?: string | any;
 }
 
 export interface Vehicle {
@@ -52,7 +53,7 @@ export interface Vehicle {
   color: string;
   plate_number: string;
   platenumber?: string;
-  user_id?:string;
+  user_id?: string;
   userId?: string;
   user?: Personnel;
 }
