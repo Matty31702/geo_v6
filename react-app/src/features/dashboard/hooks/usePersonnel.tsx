@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { FirestoreResponse, Personnel } from "../../../types/firestore";
-import personnelService, {
-  EditFormDataProps,
-  FormDataProps,
-} from "../../../services/personnelService";
+import { FirestoreResponse } from "../../../shared/types/firestore";
+
+import {
+  Personnel,
+  PersonnelEditFormDataProps,
+  PersonnelErrorResponse,
+  PersonnelFormDataProps,
+} from "../shared/types/personnel";
+import personnelService from "../../../services/personnelService";
 
 // Use personnel hook
 const usePersonnel = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [personnels, setPersonnels] = useState<Personnel[]>([]);
-  const [error, setError] = useState<string>("");
+  const [errorResponse, setErrorResponse] = useState<PersonnelErrorResponse>();
   const [selectedPersonnel, setSelectedPersonnel] = useState<Personnel | null>(
     null
   );
@@ -27,9 +31,12 @@ const usePersonnel = () => {
 
       // Set state
       if (personnels.data) {
+        // Set personnel data
         setPersonnels(personnels.data);
       } else {
-        console.error("An error occurred while fetching personnels");
+        setErrorResponse({
+          other: "An error occurred while fetching personnels",
+        });
       }
     } catch (error: any) {
       console.error("An error occurred while fetching personnels:", error);
@@ -37,9 +44,9 @@ const usePersonnel = () => {
   };
 
   // Add email and password - this one does use loading state
-  const addPersonnel = async (formData: FormDataProps) => {
+  const addPersonnel = async (formData: PersonnelFormDataProps) => {
     setLoading(true);
-    setError("");
+    setErrorResponse({});
 
     try {
       const userCredential = await personnelService.addUserWithEmailAndPassword(
@@ -61,7 +68,7 @@ const usePersonnel = () => {
   // Handle editing personnel - this one does use loading state
   const editPersonnel = async (
     id: Personnel["id"],
-    updatedData: EditFormDataProps
+    updatedData: PersonnelEditFormDataProps
   ): Promise<{
     success: boolean;
     error: string | null;
@@ -82,17 +89,36 @@ const usePersonnel = () => {
     }
   };
 
+  // Handle deleting personnel - this one does use loading state
+  const deletePersonnel = async (id: Personnel["id"]): Promise<boolean> => {
+    // Set Loading
+    setLoading(true);
+    // Set Response
+    setErrorResponse({});
+
+    try {
+      const response = await personnelService.deletePersonnel(id);
+
+      return response.success;
+    } catch (error) {
+      console.error("An error occured deleting the personnel: ", error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     personnels,
     selectedPersonnel,
-    error,
+    errorResponse,
     addPersonnel,
     setSelectedPersonnel,
-    setError,
     getAllPersonnels,
     editPersonnel,
     handleSelectPersonnel,
+    deletePersonnel,
   };
 };
 

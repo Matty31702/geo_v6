@@ -1,7 +1,19 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
-import { FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { FirestoreResponse } from "../shared/types/firestore";
 import { database } from "../core/config/firebaseConfig";
 import { FormDataProps } from "../modules/Vehicles/components/forms/AddVehicleModal/AddVehicleModal";
+import { Vehicle } from "../features/vehicles/shared/types/vehicle";
+import { Personnel } from "../features/dashboard/shared/types/personnel";
 
 export interface EditFormDataProps {
   id: Vehicle["id"];
@@ -40,7 +52,6 @@ const vehicleService = {
                 ...personnelData,
                 id: personnelSnap.id, // Put `id` last to avoid overwriting
               } as Personnel;
-          
             }
           }
 
@@ -49,7 +60,6 @@ const vehicleService = {
       );
 
       return { data: vehicles, error: null };
-
     } catch (error: any) {
       return { data: null, error: error.message };
     }
@@ -64,7 +74,7 @@ const vehicleService = {
         const vehiclesRef = collection(database, "Vehicles");
         const q = query(vehiclesRef, where("user_id", "==", data.user_id));
         const querySnapshot = await getDocs(q);
-        
+
         // If we found a vehicle with this user_id, update it instead of creating a new one
         if (!querySnapshot.empty) {
           const existingVehicleDoc = querySnapshot.docs[0];
@@ -73,13 +83,16 @@ const vehicleService = {
             color: data.color,
             model: data.model,
             plate_number: data.plate_number,
-            user_id: data.user_id
+            user_id: data.user_id,
           };
-          await updateDoc(doc(database, "Vehicles", existingVehicleDoc.id), updateData);
+          await updateDoc(
+            doc(database, "Vehicles", existingVehicleDoc.id),
+            updateData
+          );
           return;
         }
       }
-      
+
       // If no matching vehicle found or no user_id provided, create a new vehicle
       const vehicleRef = doc(collection(database, "Vehicles")); // auto-generates ID
       await setDoc(vehicleRef, data);
@@ -108,6 +121,25 @@ const vehicleService = {
       };
     } catch (error: any) {
       console.error("Error updating personnel:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Handle deleting a personnel
+  async deleteVehicle(id: string): Promise<{
+    success: boolean;
+    error: string | null;
+  }> {
+    try {
+      const vehicleRef = doc(database, "Vehicles", id);
+      await deleteDoc(vehicleRef);
+
+      return {
+        success: true,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error("Error deleting vehicle:", error);
       return { success: false, error: error.message };
     }
   },

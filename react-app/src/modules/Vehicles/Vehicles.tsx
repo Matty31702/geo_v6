@@ -3,12 +3,13 @@ import CustomHelmet from "../../shared/components/CustomHelmet";
 import HeaderSection from "../../shared/components/HeaderSection";
 import useVehicle from "../../features/dashboard/hooks/useVehicle";
 import { PenTool, RefreshCw, Search } from "lucide-react";
-import { Vehicle } from "../../types/firestore";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import AddVehicleModal from "./components/forms/AddVehicleModal";
-import showToast from "../../utilities/toast";
+import showToast from "../../shared/utilities/toast";
 import EditVehicleModal from "./components/forms/EditVehicleModal";
 import useAuth from "../../features/dashboard/hooks/useAuth";
+import DeleteVehicleModal from "./components/forms/DeleteVehicleModal";
+import { Vehicle } from "../../features/vehicles/shared/types/vehicle";
 
 const Vehicles = () => {
   // Use vehicle
@@ -17,8 +18,10 @@ const Vehicles = () => {
     error,
     loading,
     selectedVehicle,
+    deleteVehicle,
     handleSelectVehicle,
     handleUnselectVehicle,
+    setSelectedVehicle,
     getAllVehicles,
   } = useVehicle();
 
@@ -29,6 +32,7 @@ const Vehicles = () => {
   // const [filterType, setFilterType] = useState<string>("");
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false); // State for modal visibility
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false); // State for modal visibility
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const itemsPerPage = 10;
 
   const { isSuperAdmin } = useAuth();
@@ -83,6 +87,21 @@ const Vehicles = () => {
     currentPage * itemsPerPage
   );
 
+  // Handle delete confirmation
+  const handleDeleteConfirmed = async () => {
+    if (selectedVehicle?.id) {
+      const success = await deleteVehicle(selectedVehicle.id);
+      if (success) {
+        showToast.success("Successfully deleted a personnel!");
+        window.location.reload();
+        setIsDeleteModalOpen(false);
+        setSelectedVehicle(null);
+      } else {
+        showToast.error("Failed to delete the personnel.");
+      }
+    }
+  };
+
   // Fetch data
   useEffect(() => {
     getAllVehicles();
@@ -92,7 +111,6 @@ const Vehicles = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, searchTerm]);
-
 
   return (
     <>
@@ -255,6 +273,15 @@ const Vehicles = () => {
                             >
                               Edit
                             </button>
+                            <button
+                              onClick={() => {
+                                handleSelectVehicle(vehicle);
+                                setIsDeleteModalOpen(true);
+                              }}
+                              className="text-red-500 hover:text-red-700 ml-4"
+                            >
+                              Delete
+                            </button>
                           </td>
                         )}
                       </tr>
@@ -293,6 +320,15 @@ const Vehicles = () => {
                 setIsEditModalOpen(false);
               }}
               onVehicleEdited={handleUserEdited}
+            />
+          )}
+
+          {selectedVehicle && (
+            <DeleteVehicleModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirmDelete={handleDeleteConfirmed}
+              vehicleName={selectedVehicle.model}
             />
           )}
         </>

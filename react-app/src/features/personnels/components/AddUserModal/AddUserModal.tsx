@@ -1,5 +1,5 @@
 import { Plus, Loader2 } from "lucide-react";
-import { validateUserForm } from "../../../../utilities/validation";
+import { validateUserForm } from "../../../../shared/utilities/validation";
 import useFormData from "../../../../components/hooks/useFormData";
 import { FormDataProps } from "../../../../services/personnelService";
 import usePersonnel from "../../../dashboard/hooks/usePersonnel";

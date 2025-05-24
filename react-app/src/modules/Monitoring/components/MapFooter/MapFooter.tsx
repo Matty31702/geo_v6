@@ -1,5 +1,5 @@
 import React from "react";
-import { Personnel, Vehicle } from "../../../../types/firestore";
+import { Personnel, Vehicle } from "../../../../shared/types/firestore";
 import { GeofencePolygon } from "../../types";
 
 interface MapFooterProps {

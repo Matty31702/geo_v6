@@ -10,7 +10,7 @@ import {
   getValidPersonnel,
   isPointInPolygon,
 } from "./utilities/geofencing";
-import { Personnel, Vehicle } from "../../types/firestore";
+import { Personnel, Vehicle } from "../../shared/types/firestore";
 import MapHeader from "./components/MapHeader";
 import CustomMapContainer from "./components/CustomMapContainer";
 import MapLegendContainer from "./components/MapLegendContainer";

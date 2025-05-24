@@ -1,6 +1,6 @@
 import { RefreshCw, Users } from "lucide-react";
 import React from "react";
-import { Personnel } from "../../../../types/firestore";
+import { Personnel } from "../../../../shared/types/firestore";
 
 interface PersonnelListProps {
   loading: boolean;
@@ -34,10 +34,7 @@ const PersonnelList: React.FC<PersonnelListProps> = ({
           {filteredPersonnel.map((person) => (
             <li key={person.id} className="py-2">
               <div className="flex items-center">
-                <div
-                  className="w-3 h-3 rounded-full mr-2"
-                 
-                />
+                <div className="w-3 h-3 rounded-full mr-2" />
                 <span className="text-sm font-medium">{person.name}</span>
               </div>
               <div className="text-xs text-gray-500 ml-5">

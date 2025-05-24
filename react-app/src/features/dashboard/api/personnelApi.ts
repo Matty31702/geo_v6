@@ -33,7 +33,6 @@ export const personnelApi = {
   // Add new personnel
   async addPersonnel(data: CreatePersonnel): Promise<void> {
     try {
-
       console.log(data);
 
       // Create email and password

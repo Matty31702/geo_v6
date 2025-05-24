@@ -4,7 +4,7 @@ import "./index.css";
 import { RouterProvider } from "react-router-dom";
 import router from "./core/router/router.tsx";
 import { HelmetProvider } from "react-helmet-async";
-import AuthProvider from "./providers/AuthProvider.tsx";
+import AuthProvider from "./shared/providers/AuthProvider.tsx";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
