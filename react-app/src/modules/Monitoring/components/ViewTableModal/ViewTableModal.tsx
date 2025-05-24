@@ -2,8 +2,9 @@ import React from "react";
 import FormContainer from "../../../../shared/components/FormContainer/FormContainer";
 import FormHeader from "../../../../shared/components/FormHeader";
 import { GeofencePolygon } from "../../types";
-import { Personnel, Vehicle } from "../../../../types/firestore";
 import { isPointInPolygon } from "../../utilities/geofencing";
+import { Personnel } from "../../../../features/dashboard/shared/types/personnel";
+import { Vehicle } from "../../../../features/vehicles/shared/types/vehicle";
 
 interface ViewTableModalProps {
   type: "Personnel" | "Vehicle";
@@ -30,7 +31,13 @@ const ViewTableModal: React.FC<ViewTableModalProps> = ({
   const tableHeaders: string[] =
     type === "Personnel"
       ? ["ID Number", "Name", "Coordinates", "Current Status"]
-      : ["Personnel ID", "Model", "Plate Number", "Coordinates", "Current Status"];
+      : [
+          "Personnel ID",
+          "Model",
+          "Plate Number",
+          "Coordinates",
+          "Current Status",
+        ];
 
   if (!isOpen) return null;
 
@@ -76,7 +83,7 @@ const ViewTableModal: React.FC<ViewTableModalProps> = ({
                           {person.name || "-"}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {`${person.lat} - ${person.lng}`}
+                          {`${person.lat} - ${person.lng}`}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm">
                           <span
@@ -84,9 +91,7 @@ const ViewTableModal: React.FC<ViewTableModalProps> = ({
                               isInGeofence ? "bg-green-500" : "bg-red-500"
                             }`}
                           >
-                            {isInGeofence
-                              ? "Present"
-                              : "Not Present"}
+                            {isInGeofence ? "Present" : "Not Present"}
                           </span>
                         </td>
                       </tr>
@@ -119,9 +124,7 @@ const ViewTableModal: React.FC<ViewTableModalProps> = ({
                               isInGeofence ? "bg-green-500" : "bg-red-500"
                             }`}
                           >
-                            {isInGeofence
-                              ? "Present"
-                              : "Not Present"}
+                            {isInGeofence ? "Present" : "Not Present"}
                           </span>
                         </td>
                       </tr>

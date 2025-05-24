@@ -1,66 +1,75 @@
 import { useState } from "react";
-import { validateLoginForm } from "../utils/validation";
+import { validateLoginForm } from "../utils/authValidation";
 import { authApi } from "../api/authApi";
 import { User } from "firebase/auth";
-import { CustomUser } from "../api/models/AuthUser";
+import {
+  CustomUser,
+  LoginCredentials,
+  LoginErrorResponse,
+  LoginValidationErrors,
+} from "../shared/types/authType";
 
 export const useAuth = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<{
-    email?: string;
-    password?: string;
-    other?: string;
-  } | null>(null);
+  const [validationError, setValidationError] =
+    useState<LoginValidationErrors>();
+  const [errorResponse, setErrorResponse] = useState<LoginErrorResponse | null>(
+    null
+  );
 
   // Attempt login using userId and password
-  const loginWithIdAndPassword = async (userId: string, password: string, loginType: "admin" | "superadmin"): Promise<User | undefined> => {
+  const loginWithIdAndPassword = async (
+    credentials: LoginCredentials,
+    loginType: "admin" | "superadmin"
+  ): Promise<User | undefined> => {
     // Set Loading
     setLoading(true);
 
     try {
       // Validate userId and password
-      const errors = validateLoginForm(userId, password);
+      const errors = validateLoginForm(credentials);
       if (errors.email || errors.password) {
-        setError(errors);
+        setValidationError(errors);
         return;
       }
 
       // First, check if the user ID exists in our Firestore
-      const user: CustomUser = await authApi.getByUsername(userId);
+      const user: CustomUser = await authApi.getByUsername(credentials.userId);
 
       // Verify if user does exist
-      if(!user) {
-        setError({
-          other: "User not found"
+      if (!user) {
+        setErrorResponse({
+          other: "User not found",
         });
         return;
       }
 
       // Check if user type matches
-      const userType = user.getType();
+      const userType = user.type;
       if (
-        (loginType === "admin" &&userType !== "admin") ||
-        (loginType === "superadmin" &&userType !== "superadmin")
+        (loginType === "admin" && userType !== "admin") ||
+        (loginType === "superadmin" && userType !== "superadmin")
       ) {
-        setError(
-          {
-            other: `This ID is not registered as a ${
+        setErrorResponse({
+          other: `This ID is not registered as a ${
             loginType === "admin" ? "Admin" : "Super Admin"
-          }`
-          }
-        );
+          }`,
+        });
         return;
       }
 
       // Use the email from Firestore to log in via Firebase Auth
       // If the email field is empty in your Firestore, you'll need to set up an email-password
       // in Firebase Authentication that corresponds to this user ID
-      const authUser: User = await authApi.loginWithEmailAndPassword(user.getEmail(), password);
+      const authUser: User = await authApi.loginWithEmailAndPassword(
+        user.email,
+        credentials.password
+      );
 
       // Return user
       return authUser;
     } catch (error) {
-      setError({
+      setErrorResponse({
         other: "Invalid credentials",
       });
     } finally {
@@ -71,11 +80,12 @@ export const useAuth = () => {
   // Attempt to logout user
   const logout = async (): Promise<void> => {
     await authApi.logout();
-  }
+  };
 
   return {
     loading,
-    error,
+    errorResponse,
+    validationError,
     loginWithIdAndPassword,
     logout,
   };

@@ -3,7 +3,7 @@ import usePersonnel from "../../dashboard/hooks/usePersonnel";
 import { RefreshCw } from "lucide-react";
 import CustomHelmet from "../../../shared/components/CustomHelmet";
 import HeaderSection from "../../../shared/components/HeaderSection";
-import showToast from "../../../utilities/toast";
+import showToast from "../../../shared/utilities/toast";
 
 import EditUserModal from "../components/EditUserModal";
 import useAuth from "../../dashboard/hooks/useAuth";
@@ -14,16 +14,18 @@ import usePagination from "../../../shared/hooks/usePagination";
 import StatCard from "../components/StatCard/StatCard";
 import SearchFilterSection from "../components/SearchFilterSection";
 import Table from "../components/Table";
+import DeleteUserModal from "../components/DeleteUserModal";
 
 const Personnel = () => {
   const {
     loading,
-    error,
+    errorResponse,
     personnels,
     selectedPersonnel,
     handleSelectPersonnel,
     getAllPersonnels,
     setSelectedPersonnel,
+    deletePersonnel,
   } = usePersonnel();
 
   // Use pagination
@@ -32,6 +34,7 @@ const Personnel = () => {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const itemsPerPage = 10;
 
   const { isSuperAdmin } = useAuth();
@@ -82,6 +85,21 @@ const Personnel = () => {
     showToast.success("Successfully edited a personnel!");
   };
 
+  // Handle delete confirmation
+  const handleDeleteConfirmed = async () => {
+    if (selectedPersonnel?.id) {
+      const success = await deletePersonnel(selectedPersonnel.id);
+      if (success) {
+        showToast.success("Successfully deleted a personnel!");
+        window.location.reload();
+        setIsDeleteModalOpen(false);
+        setSelectedPersonnel(null);
+      } else {
+        showToast.error("Failed to delete the personnel.");
+      }
+    }
+  };
+
   return (
     <>
       <CustomHelmet title="Personnels | Geobound" />
@@ -111,10 +129,10 @@ const Personnel = () => {
               <p className="mt-4 text-gray-600">Loading personnel data...</p>
             </div>
           </div>
-        ) : error ? (
+        ) : errorResponse ? (
           <div className="bg-red-50 p-4 rounded-lg border border-red-200 text-red-700">
             <p className="font-medium">Error loading personnel data</p>
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-600">{errorResponse.other}</p>
             <button
               onClick={handleRefresh}
               className="mt-2 px-4 py-1 bg-red-100 text-red-700 rounded-md flex items-center hover:bg-red-200"
@@ -174,6 +192,28 @@ const Personnel = () => {
                           </button>
                         </td>
                       )}
+                      {isSuperAdmin && (
+                        <td className="px-4 py-3 space-x-3 text-sm text-center">
+                          <button
+                            onClick={() => {
+                              setIsEditModalOpen(true);
+                              handleSelectPersonnel(person);
+                            }}
+                            className="text-gray-600 hover:text-gray-800"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleSelectPersonnel(person);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            className="text-red-500 hover:text-red-700 ml-4"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
@@ -206,6 +246,15 @@ const Personnel = () => {
             setIsEditModalOpen(false);
           }}
           onUserEdited={handleUserEdited}
+        />
+      )}
+
+      {selectedPersonnel && (
+        <DeleteUserModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirmDelete={handleDeleteConfirmed}
+          personnelName={selectedPersonnel.name}
         />
       )}
     </>

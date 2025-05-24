@@ -1,8 +1,8 @@
 import { Navigate, RouteObject } from "react-router-dom";
-import GuestLayout from "./components/GuestLayout";
 import LINKS from "../../core/constants/links";
-import Login from "./pages/Login";
 import guestLoader from "../../core/router/guestLoader";
+import LoginPage from "./pages/LoginPage";
+import GuestLayout from "./components/GuestLayout";
 
 const authRoutes: RouteObject = {
   path: "/",
@@ -14,7 +14,7 @@ const authRoutes: RouteObject = {
     },
     {
       path: LINKS.LOGIN,
-      element: <Login />,
+      element: <LoginPage />,
       loader: guestLoader, // Prevent authenticated users from seeing login
     },
   ],

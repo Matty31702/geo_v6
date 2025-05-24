@@ -17,14 +17,15 @@ import StatCard from "../components/StatCard";
 import QuickActionContainer from "../components/QuickActionContainer";
 import { Link } from "react-router-dom";
 import LINKS from "../../../core/constants/links";
-import showToast from "../../../utilities/toast";
+import showToast from "../../../shared/utilities/toast";
 import useAuth from "../hooks/useAuth";
-import FormModal from "../components/FormModal";
+import FormModal from "../components/forms/FormModal";
 import {
   getTotalPersonnelInsideGeofence,
   getTotalPersonnelInsideGeofenceOnline,
   getTotalVehicleInsideGeofence,
 } from "../utils/count";
+import { DashboardStats } from "../shared/types/stats";
 
 const Dashboard = () => {
   // Modal state
@@ -37,7 +38,7 @@ const Dashboard = () => {
   const { isSuperAdmin } = useAuth();
 
   // State for calculated stats
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalPersonnel: 0,
     personnelInside: 0,
     personnelInsideOnline: 0,

@@ -10,7 +10,6 @@ import {
   getValidPersonnel,
   isPointInPolygon,
 } from "./utilities/geofencing";
-import { Personnel, Vehicle } from "../../types/firestore";
 import MapHeader from "./components/MapHeader";
 import CustomMapContainer from "./components/CustomMapContainer";
 import MapLegendContainer from "./components/MapLegendContainer";
@@ -18,6 +17,8 @@ import CustomHelmet from "../../shared/components/CustomHelmet";
 import useVehicle from "../../features/dashboard/hooks/useVehicle";
 import MapFooter from "./components/MapFooter";
 import ViewTableModal from "./components/ViewTableModal";
+import { Vehicle } from "../../features/vehicles/shared/types/vehicle";
+import { Personnel } from "../../features/dashboard/shared/types/personnel";
 
 const Monitoring = () => {
   // Use custom hook to get personnel data

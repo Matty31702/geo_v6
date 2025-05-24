@@ -39,13 +39,13 @@ const router = createBrowserRouter([
       },
       {
         path: LINKS.MONITORING,
-        element: <Monitoring />
+        element: <Monitoring />,
       },
       {
         path: LINKS.ACTIVITIES,
-        element: <Activities />
+        element: <Activities />,
       },
-    ]
+    ],
   },
 
   // Auth routes

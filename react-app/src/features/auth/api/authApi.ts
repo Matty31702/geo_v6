@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 import { auth, database } from "../../../core/config/firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { CustomUser } from "./models/AuthUser";
+import { CustomUser } from "../shared/types/authType";
 
 const USER_COLLECTION = "Users";
 
@@ -28,16 +28,12 @@ export const authApi = {
       }
 
       const doc = querySnapshot.docs[0];
-      const data = doc.data();
+      const data = doc.data() as Omit<CustomUser, "id">;
 
-      const user = new CustomUser({
-        id: doc.id,
-        first_name: data.first_name,
-        middle_name: data.middle_name,
-        last_name: data.last_name,
-        email: data.email,
-        type: data.type,
-      });
+      const user = {
+        id: doc.id as string,
+        ...data,
+      };
 
       return user; // Return user
     } catch (error: any) {

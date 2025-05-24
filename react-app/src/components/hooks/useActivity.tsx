@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { database } from "../../core/config/firebaseConfig";
-import { Activity, FirestoreResponse } from "../../types/firestore";
+import { FirestoreResponse } from "../../shared/types/firestore";
 import activityService from "../../services/activityService";
+import { Activity } from "../../features/activity/shared/types/activity";
 
 const useActivity = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -13,17 +14,17 @@ const useActivity = () => {
   const getAllActivities = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const activities: FirestoreResponse<Activity[]> = await activityService.getAllActivities();
+      const activities: FirestoreResponse<Activity[]> =
+        await activityService.getAllActivities();
 
       // Set state
-      if(activities.data) {
+      if (activities.data) {
         setActivities(activities.data);
       } else {
         setError("An error occured while fetching activities");
       }
-      
     } catch (err) {
       console.error("Error fetching activities: ", err);
       setError("Failed to fetch activities. Please try again later.");
@@ -36,7 +37,7 @@ const useActivity = () => {
   const getActivitiesByPersonnelId = async (personnelId: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Query activities collection filtered by the personnel ID
       const activitiesQuery = query(
@@ -44,13 +45,13 @@ const useActivity = () => {
         where("user_id", "==", personnelId),
         orderBy("date_time", "desc")
       );
-      
+
       const activitiesSnapshot = await getDocs(activitiesQuery);
       const activitiesList = activitiesSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      
+
       setActivities(activitiesList);
     } catch (err) {
       console.error("Error fetching activities for personnel: ", err);

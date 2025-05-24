@@ -1,10 +1,9 @@
 import { Plus, Loader2 } from "lucide-react";
-import { validateUserForm } from "../../../../utilities/validation";
 import useFormData from "../../../../components/hooks/useFormData";
-import { FormDataProps } from "../../../../services/personnelService";
 import usePersonnel from "../../../dashboard/hooks/usePersonnel";
 import FormContainer from "../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../components/_forms/FormHeader";
+import { PersonnelFormDataProps } from "../../../dashboard/shared/types/personnel";
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -19,38 +18,40 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   onUserAdded,
 }) => {
   // Use form data
-  const { formData, reset, handleChange } = useFormData<FormDataProps>({
-    initialValues: {
-      name: "",
-      username: "",
-      phone_number: "",
-      mark_number: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      address: "",
-      // sector: "",
-      datetime: "",
-      type: "",
-      gender: "",
-      guardian_name: "",
-      guardian_phone_number: "",
-      birthday: "",
-    },
-  });
+  const { formData, reset, handleChange } = useFormData<PersonnelFormDataProps>(
+    {
+      initialValues: {
+        name: "",
+        username: "",
+        phone_number: "",
+        mark_number: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        address: "",
+        // sector: "",
+        type: "",
+        gender: "",
+        guardian_name: "",
+        guardian_phone_number: "",
+        birthday: "",
+      },
+    }
+  );
 
   // Use personnel data
-  const { loading, error, addPersonnel, setError } = usePersonnel();
+  const { loading, /* errorResponse */ addPersonnel /* setError */ } =
+    usePersonnel();
 
   // Handle form submission
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const validationError = validateUserForm(formData);
+    /* const validationError = validateUserForm(formData);
     if (validationError) {
       setError(validationError);
       return;
-    }
+    } */
 
     try {
       await addPersonnel(formData);
@@ -64,7 +65,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error("Error adding user:", err);
-      setError(err.message || "Failed to create user");
+      // setError(err.message || "Failed to create user");
     }
   };
 
@@ -72,7 +73,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
   return (
     <FormContainer>
-      <FormHeader title="Add New Personnel" error={error} onClose={onClose} />
+      <FormHeader title="Add New Personnel" error={""} onClose={onClose} />
 
       <form onSubmit={handleSubmit} className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

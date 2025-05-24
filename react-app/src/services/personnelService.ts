@@ -1,57 +1,28 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDocs,
-  orderBy,
-  query,
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
-import { FirestoreResponse, Personnel, Vehicle } from "../types/firestore";
-import { auth, database, firebaseConfig } from "../core/config/firebaseConfig";
+import { FirestoreResponse } from "../shared/types/firestore";
+import { database, firebaseConfig } from "../core/config/firebaseConfig";
 import {
   createUserWithEmailAndPassword,
   getAuth,
   User,
   UserCredential,
 } from "firebase/auth";
-import omit from "../utilities/omit";
+import omit from "../shared/utilities/omit";
 import { initializeApp } from "firebase/app";
-import showToast from "../utilities/toast";
-
-export interface FormDataProps {
-  id?: string;
-  name: string;
-  email: string;
-  phone_number: string;
-  address: string;
-  datetime?: string;
-  is_verified?: boolean;
-  latitude?: number;
-  longitude?: number;
-  profile?: string;
-  // sector: string;
-  type?: string;
-  gender: string;
-  birthday: string;
-  username: string;
-  password: string;
-  confirmPassword: string;
-  guardian_name: string;
-  guardian_phone_number: string;
-  mark_number: string;
-}
-
-export interface EditFormDataProps {
-  id: Personnel["id"];
-  name: Personnel["name"];
-  phone_number: Personnel["phone_number"];
-  gender: Personnel["gender"];
-  birthday: Personnel["birthday"];
-  address: Personnel["address"];
-  guardian_name: Personnel["guardian_name"];
-  guardian_phone_number: Personnel["guardian_phone_number"];
-}
+import showToast from "../shared/utilities/toast";
+import {
+  Personnel,
+  PersonnelEditFormDataProps,
+  PersonnelFormDataProps,
+} from "../features/dashboard/shared/types/personnel";
+import { Vehicle } from "../features/vehicles/shared/types/vehicle";
 
 interface CustomUserCredential {
   data: UserCredential | null;
@@ -136,7 +107,10 @@ const personnelService = {
   },
 
   // Handle adding new personnel
-  async addPersonnel(formData: FormDataProps, user: User): Promise<void> {
+  async addPersonnel(
+    formData: PersonnelFormDataProps,
+    user: User
+  ): Promise<void> {
     // Omit password and confirmPassword
     const filteredFormData = omit(formData, ["password", "confirmPassword"]);
 
@@ -166,7 +140,7 @@ const personnelService = {
   // Handle editing personnel
   async editPersonnel(
     id: string,
-    updatedData: Partial<EditFormDataProps>
+    updatedData: Partial<PersonnelEditFormDataProps>
   ): Promise<{
     success: boolean;
     error: string | null;
@@ -182,6 +156,25 @@ const personnelService = {
       };
     } catch (error: any) {
       console.error("Error updating personnel:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // ✅ Handle deleting a personnel
+  async deletePersonnel(id: string): Promise<{
+    success: boolean;
+    error: string | null;
+  }> {
+    try {
+      const userRef = doc(database, "Users", id);
+      await deleteDoc(userRef);
+
+      return {
+        success: true,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error("Error deleting personnel:", error);
       return { success: false, error: error.message };
     }
   },
