@@ -1,11 +1,11 @@
 import React from "react";
-import { Personnel } from "../../../../shared/types/firestore";
 import useFormData from "../../../../components/hooks/useFormData";
 import FormContainer from "../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../components/_forms/FormHeader";
 import usePersonnel from "../../../dashboard/hooks/usePersonnel";
 import { Edit, Loader2 } from "lucide-react";
 import { validateEditUserForm } from "../../../../shared/utilities/validation";
+import { Personnel } from "../../../dashboard/shared/types/personnel";
 
 interface EditUserModalProps {
   selectedPersonnel: Personnel;
@@ -48,7 +48,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   });
 
   // Use personnel hook
-  const { loading, error, setError, editPersonnel } = usePersonnel();
+  const { loading, /* error */ /* setError */ editPersonnel } = usePersonnel();
 
   // Handle submit form submission
   const handleSubmit = async (e: any) => {
@@ -56,7 +56,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
     const validationError = validateEditUserForm(formData);
     if (validationError) {
-      setError(validationError);
+      // setError(validationError);
       return;
     }
 
@@ -72,7 +72,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error("Error adding user:", err);
-      setError(err.message || "Failed to create user");
+      // setError(err.message || "Failed to create user");
     }
   };
 
@@ -80,7 +80,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   return (
     <FormContainer>
-      <FormHeader title="Edit User Personnel" error={error} onClose={onClose} />
+      <FormHeader title="Edit User Personnel" error={""} onClose={onClose} />
 
       <form onSubmit={handleSubmit} className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

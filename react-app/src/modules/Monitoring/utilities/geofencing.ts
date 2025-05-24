@@ -1,7 +1,7 @@
 // Prepare markers for map bounds calculation
 import { LatLngTuple } from "leaflet";
-import { Personnel } from "../../../shared/types/firestore";
 import { GeofenceCenter, GeofencePolygon, PoliceHQ } from "../types";
+import { Personnel } from "../../../features/dashboard/shared/types/personnel";
 
 // Get only include valid markers
 export const getAllMarkers = (

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { database } from "../../core/config/firebaseConfig";
-import { Activity, FirestoreResponse } from "../../shared/types/firestore";
+import { FirestoreResponse } from "../../shared/types/firestore";
 import activityService from "../../services/activityService";
+import { Activity } from "../../features/activity/shared/types/activity";
 
 const useActivity = () => {
   const [loading, setLoading] = useState<boolean>(false);

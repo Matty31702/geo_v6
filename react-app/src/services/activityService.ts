@@ -6,13 +6,11 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import {
-  Activity,
-  FirestoreResponse,
-  Personnel,
-  Vehicle,
-} from "../shared/types/firestore";
+import { FirestoreResponse } from "../shared/types/firestore";
 import { database } from "../core/config/firebaseConfig";
+import { Activity } from "../features/activity/shared/types/activity";
+import { Personnel } from "../features/dashboard/shared/types/personnel";
+import { Vehicle } from "../features/vehicles/shared/types/vehicle";
 
 const activityService = {
   // Get all activities

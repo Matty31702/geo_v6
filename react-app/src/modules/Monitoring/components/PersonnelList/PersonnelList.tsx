@@ -1,6 +1,6 @@
 import { RefreshCw, Users } from "lucide-react";
 import React from "react";
-import { Personnel } from "../../../../shared/types/firestore";
+import { Personnel } from "../../../../features/dashboard/shared/types/personnel";
 
 interface PersonnelListProps {
   loading: boolean;

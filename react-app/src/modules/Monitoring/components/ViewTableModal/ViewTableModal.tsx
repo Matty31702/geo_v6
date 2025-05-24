@@ -2,8 +2,9 @@ import React from "react";
 import FormContainer from "../../../../shared/components/FormContainer/FormContainer";
 import FormHeader from "../../../../shared/components/FormHeader";
 import { GeofencePolygon } from "../../types";
-import { Personnel, Vehicle } from "../../../../shared/types/firestore";
 import { isPointInPolygon } from "../../utilities/geofencing";
+import { Personnel } from "../../../../features/dashboard/shared/types/personnel";
+import { Vehicle } from "../../../../features/vehicles/shared/types/vehicle";
 
 interface ViewTableModalProps {
   type: "Personnel" | "Vehicle";

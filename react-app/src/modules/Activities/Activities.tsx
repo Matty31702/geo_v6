@@ -6,7 +6,7 @@ import showToast from "../../shared/utilities/toast";
 import PaginationControl from "../../components/paginations/PaginationControl";
 import { format } from "date-fns";
 import useActivity from "../../components/hooks/useActivity";
-import { Activity } from "../../shared/types/firestore";
+import { Activity } from "../../features/activity/shared/types/activity";
 
 const Activities = () => {
   const { loading, error, activities, getAllActivities } = useActivity();

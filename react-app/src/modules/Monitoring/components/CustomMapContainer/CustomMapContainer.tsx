@@ -9,8 +9,9 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import { GeofencePolygon, PoliceHQ } from "../../types";
-import { Personnel, Vehicle } from "../../../../shared/types/firestore";
 import { isPointInPolygon } from "../../utilities/geofencing";
+import { Personnel } from "../../../../features/dashboard/shared/types/personnel";
+import { Vehicle } from "../../../../features/vehicles/shared/types/vehicle";
 
 // Custom icon for personnel with mark numbers
 const createMarkedIcon = (

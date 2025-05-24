@@ -1,4 +1,4 @@
-import { EditFormDataProps } from "../../services/personnelService";
+import { PersonnelEditFormDataProps } from "../../features/dashboard/shared/types/personnel";
 
 export interface VehicleFormData {
   color: string;
@@ -32,7 +32,9 @@ export const validateVehicleForm = (formData: VehicleFormData): string => {
 };
 
 // Validate user form (put method)
-export const validateEditUserForm = (formData: EditFormDataProps): string => {
+export const validateEditUserForm = (
+  formData: PersonnelEditFormDataProps
+): string => {
   if (!formData.name.trim()) return "Name is required";
   if (!formData.phone_number.trim()) return "Phone number is required";
   if (!formData.address.trim()) return "Address is required";

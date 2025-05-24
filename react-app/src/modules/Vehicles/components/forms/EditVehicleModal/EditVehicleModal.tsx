@@ -3,8 +3,8 @@ import FormContainer from "../../../../../components/_forms/FormContainer";
 import FormHeader from "../../../../../components/_forms/FormHeader";
 import useFormData from "../../../../../components/hooks/useFormData";
 import useVehicle from "../../../../../features/dashboard/hooks/useVehicle";
-import { Vehicle } from "../../../../../shared/types/firestore";
 import { validateVehicleForm } from "../../../../../shared/utilities/validation";
+import { Vehicle } from "../../../../../features/vehicles/shared/types/vehicle";
 
 interface EditVehicleModalProps {
   selectedVehicle: Vehicle;
