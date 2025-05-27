@@ -152,7 +152,7 @@ const Personnel = () => {
                     Name
                   </th>
                   {isSuperAdmin && (
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Action
                     </th>
                   )}
@@ -179,19 +179,7 @@ const Personnel = () => {
                           {person.name || "-"}
                         </div>
                       </td>
-                      {isSuperAdmin && (
-                        <td className="px-4 py-3 space-x-3 text-sm text-center">
-                          <button
-                            onClick={() => {
-                              setIsEditModalOpen(true);
-                              handleSelectPersonnel(person);
-                            }}
-                            className="text-gray-600 hover:text-gray-800"
-                          >
-                            Edit
-                          </button>
-                        </td>
-                      )}
+
                       {isSuperAdmin && (
                         <td className="px-4 py-3 space-x-3 text-sm text-center">
                           <button
