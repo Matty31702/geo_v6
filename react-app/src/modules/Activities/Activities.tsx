@@ -305,11 +305,9 @@ const Activities = () => {
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    {statusFilter === "OUT" && (
-                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Hours In
-                      </th>
-                    )}
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Hours In
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -373,11 +371,9 @@ const Activities = () => {
                             {record.status || "UNKNOWN"}
                           </span>
                         </td>
-                        {statusFilter === "OUT" && (
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
-                            {record.hours_in ? `${record.hours_in} hrs` : "N/A"}
-                          </td>
-                        )}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {record.hours_in ? `${record.hours_in} hrs` : "N/A"}
+                        </td>
                       </tr>
                     ))
                   )}
