@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geobound/services/auth_service.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -412,8 +411,8 @@ class _HomeScreenState extends State<HomeScreen> {
         vehicleId = vehiclesSnapshot.docs.first.id;
       }
 
-      // Format hours with 2 decimal places
-      final formattedHours = _totalHoursInToday.toStringAsFixed(2);
+      // Format time with hours and minutes
+      final formattedTime = _formatHoursAndMinutes(_totalHoursInToday);
 
       // Prepare location data
       final locationData = {
@@ -483,8 +482,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 8),
               Text(
                 _isInsideGeofence
-                    ? 'Checked IN at ${_formatTime(now)} (${formattedHours}h today)'
-                    : 'Checked OUT at ${_formatTime(now)} (${formattedHours}h today)',
+                    ? 'Checked IN at ${_formatTime(now)} ($formattedTime today)'
+                    : 'Checked OUT at ${_formatTime(now)} ($formattedTime today)',
               ),
             ],
           ),
@@ -511,6 +510,22 @@ class _HomeScreenState extends State<HomeScreen> {
   // Helper method to format time for display
   String _formatTime(DateTime dateTime) {
     return DateFormat('HH:mm:ss').format(dateTime);
+  }
+
+  // Helper method to format hours and minutes
+  String _formatHoursAndMinutes(double totalHours) {
+    final hours = totalHours.floor();
+    final minutes = ((totalHours - hours) * 60).round();
+
+    if (hours > 0 && minutes > 0) {
+      return '${hours}h ${minutes}m';
+    } else if (hours > 0) {
+      return '${hours}h';
+    } else if (minutes > 0) {
+      return '${minutes}m';
+    } else {
+      return '0m';
+    }
   }
 
   // Add a periodic timer to update hours when staying inside the geofence
@@ -630,15 +645,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Format hours for display
-    final formattedHours = _totalHoursInToday.toStringAsFixed(2);
+    // Format hours and minutes for display
+    final formattedTime = _formatHoursAndMinutes(_totalHoursInToday);
 
-    // Calculate ongoing session hours if currently inside
-    String ongoingHours = "0.00";
+    // Calculate ongoing session time if currently inside
+    String ongoingTime = "0m";
     if (_isInsideGeofence && _geofenceEntryTime != null) {
       final currentDuration = DateTime.now().difference(_geofenceEntryTime!);
       final currentHours = currentDuration.inMinutes / 60.0;
-      ongoingHours = currentHours.toStringAsFixed(2);
+      ongoingTime = _formatHoursAndMinutes(currentHours);
     }
 
     return Scaffold(
@@ -674,7 +689,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     statusMessage: _statusMessage,
                   ),
 
-                  // Attendance status indicator with hours
+                  // Attendance status indicator with hours and minutes
                   Container(
                     padding: const EdgeInsets.symmetric(
                       vertical: 8,
@@ -715,12 +730,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Total Hours Today: $formattedHours h',
+                          'Total Time Today: $formattedTime',
                           style: const TextStyle(fontSize: 12),
                         ),
                         if (_isInsideGeofence && _geofenceEntryTime != null)
                           Text(
-                            'Current Session: $ongoingHours h (since ${DateFormat('HH:mm').format(_geofenceEntryTime!)})',
+                            'Current Session: $ongoingTime (since ${DateFormat('HH:mm').format(_geofenceEntryTime!)})',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.green,
