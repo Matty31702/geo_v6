@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { FirestoreResponse } from "../../../shared/types/firestore";
-
 import {
   Personnel,
   PersonnelEditFormDataProps,
@@ -8,6 +7,13 @@ import {
   PersonnelFormDataProps,
 } from "../shared/types/personnel";
 import personnelService from "../../../services/personnelService";
+
+interface UpdateCredentialsParams {
+  currentEmail: string;
+  currentPassword: string;
+  newEmail?: string;
+  newPassword?: string;
+}
 
 // Use personnel hook
 const usePersonnel = () => {
@@ -24,10 +30,10 @@ const usePersonnel = () => {
   };
 
   // Silent data fetch - doesn't set loading state
-  const getAllPersonnels = async () => {
+  const getAllPersonnels = async (isSuperAdmin: boolean) => {
     try {
       const personnels: FirestoreResponse<Personnel[]> =
-        await personnelService.getAllPersonnels();
+        await personnelService.getAllPersonnels(isSuperAdmin);
 
       // Set state
       if (personnels.data) {
@@ -65,25 +71,78 @@ const usePersonnel = () => {
     }
   };
 
-  // Handle editing personnel - this one does use loading state
+  // Handle editing personnel - enhanced version
   const editPersonnel = async (
     id: Personnel["id"],
-    updatedData: PersonnelEditFormDataProps
+    updatedData: PersonnelEditFormDataProps,
+    credentialUpdates?: UpdateCredentialsParams
   ): Promise<{
     success: boolean;
     error: string | null;
   }> => {
     setLoading(true);
+    setErrorResponse({});
 
     try {
-      await personnelService.editPersonnel(id, updatedData);
-      return {
-        success: true,
-        error: null,
-      };
+      const result = await personnelService.editPersonnel(
+        id,
+        updatedData,
+        credentialUpdates
+      );
+
+      if (result.success) {
+        // Refresh the personnel list to reflect changes
+        // You might want to call getAllPersonnels here if needed
+      } else {
+        setErrorResponse({
+          other: result.error || "Failed to update personnel",
+        });
+      }
+
+      return result;
     } catch (error: any) {
       console.error(error);
-      return { success: false, error: error.message };
+      const errorMsg = error.message || "An unexpected error occurred";
+      setErrorResponse({
+        other: errorMsg,
+      });
+      return { success: false, error: errorMsg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // NEW: Dedicated function for updating user credentials only
+  const updateUserCredentials = async (
+    userId: Personnel["id"],
+    credentialUpdates: UpdateCredentialsParams
+  ): Promise<{
+    success: boolean;
+    error: string | null;
+  }> => {
+    setLoading(true);
+    setErrorResponse({});
+
+    try {
+      const result = await personnelService.updateUserCredentials({
+        userId,
+        ...credentialUpdates,
+      });
+
+      if (!result.success) {
+        setErrorResponse({
+          other: result.error || "Failed to update credentials",
+        });
+      }
+
+      return result;
+    } catch (error: any) {
+      console.error("Error updating credentials:", error);
+      const errorMsg = error.message || "An unexpected error occurred";
+      setErrorResponse({
+        other: errorMsg,
+      });
+      return { success: false, error: errorMsg };
     } finally {
       setLoading(false);
     }
@@ -119,6 +178,7 @@ const usePersonnel = () => {
     editPersonnel,
     handleSelectPersonnel,
     deletePersonnel,
+    updateUserCredentials, // NEW: Export the new function
   };
 };
 
