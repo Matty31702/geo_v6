@@ -35,17 +35,19 @@ class _HomeScreenState extends State<HomeScreen> {
   String _currentAttendanceStatus = "Unknown";
   bool _isRecordingAttendance = false;
 
-  // Add these new variables to track time spent in geofence
+  // Fixed variables to track time spent in geofence
   DateTime? _geofenceEntryTime;
   double _totalHoursInToday = 0.0;
   Map<String, dynamic>? _currentRecord;
   String? _currentRecordId;
+  Timer? _hoursUpdateTimer;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     _initializeServices();
+    _startPeriodicUpdates();
   }
 
   @override
@@ -53,6 +55,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _hoursUpdateTimer?.cancel();
     _locationService.dispose();
     super.dispose();
+  }
+
+  // Start periodic updates for hours calculation
+  void _startPeriodicUpdates() {
+    _hoursUpdateTimer?.cancel();
+    _hoursUpdateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      if (_isInsideGeofence && _geofenceEntryTime != null && mounted) {
+        _updateHoursInRecord();
+        // Update UI to show current session time
+        setState(() {});
+      }
+    });
   }
 
   Future<void> _initializeServices() async {
@@ -77,21 +91,17 @@ class _HomeScreenState extends State<HomeScreen> {
           _updateUserLocation();
           _updateUserLoginStatus(true);
 
-          // Only use the map controller if follow is enabled AND we're sure the map is initialized
           if (_followUser &&
               locationData.latitude != null &&
               locationData.longitude != null) {
             try {
-              // Check if map controller is properly initialized
               if (_mapController.camera != null) {
                 _mapController.move(
                   LatLng(locationData.latitude!, locationData.longitude!),
-                  // ignore: deprecated_member_use
                   _mapController.zoom,
                 );
               }
             } catch (e) {
-              // Silently handle map controller error
               debugPrint("Map controller not ready: $e");
             }
           }
@@ -100,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await _getInitialLocation();
       _setupGeofence();
-      _fetchAttendanceStatus();
+      await _fetchAttendanceStatus();
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -129,10 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Logout and update status in Firestore
   Future<void> _logout() async {
     try {
-      // First update the login status to false
       await _updateUserLoginStatus(false);
-
-      // Then sign out from authentication
       await _authService.signOut();
     } catch (e) {
       debugPrint("Error during logout: $e");
@@ -145,7 +152,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Update user location in Firestore
   // Update user location and any associated vehicle in Firestore
   Future<void> _updateUserLocation() async {
     final userId = _authService.currentUser?.uid;
@@ -159,33 +165,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     try {
-      // Update user location
       await _firestore.collection('Users').doc(userId).update({
         'lat': currentLocation.latitude,
         'lng': currentLocation.longitude,
         'last_location_update': DateTime.now().toIso8601String(),
       });
 
-      // Check if user has an associated vehicle
       final vehiclesSnapshot =
           await _firestore
               .collection('Vehicles')
               .where('user_id', isEqualTo: userId)
               .get();
 
-      // If vehicle exists, update its location
       if (vehiclesSnapshot.docs.isNotEmpty) {
-        // Get the first vehicle associated with this user
-        // (assuming each user has at most one vehicle)
         final vehicleDoc = vehiclesSnapshot.docs.first;
-
-        // Update vehicle location
         await _firestore.collection('Vehicles').doc(vehicleDoc.id).update({
           'lat': currentLocation.latitude,
           'lng': currentLocation.longitude,
           'last_location_update': DateTime.now().toIso8601String(),
         });
-
         debugPrint("Updated vehicle location for user: $userId");
       }
     } catch (e) {
@@ -203,7 +201,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _updateMarkers();
       _checkIfInGeofence();
 
-      // Move map to current location with safety check
       if (_locationService.currentLocation != null) {
         try {
           _mapController.move(
@@ -244,13 +241,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _checkIfInGeofence() {
-    if (_locationService.currentLocation == null) return;
+    final currentLocation = _locationService.currentLocation;
+
+    if (currentLocation == null ||
+        currentLocation.latitude == null ||
+        currentLocation.longitude == null) {
+      debugPrint("Cannot check geofence: Location data is null");
+      return;
+    }
 
     final isInside = _geofence.isPointInGeofence(
-      LatLng(
-        _locationService.currentLocation!.latitude!,
-        _locationService.currentLocation!.longitude!,
-      ),
+      LatLng(currentLocation.latitude!, currentLocation.longitude!),
+    );
+
+    debugPrint(
+      "Checking geofence: Lat: ${currentLocation.latitude}, Lng: ${currentLocation.longitude}, Inside: $isInside",
     );
 
     if (mounted) {
@@ -264,13 +269,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Also update the _fetchAttendanceStatus method to handle exit_time
+  // Fixed _fetchAttendanceStatus method with proper entry time handling
   Future<void> _fetchAttendanceStatus() async {
     try {
       final userId = _authService.currentUser?.uid;
       if (userId == null) return;
 
-      // Get current date as string (YYYY-MM-DD)
       final today = DateTime.now().toIso8601String().split('T')[0];
       final tomorrow =
           DateTime.now()
@@ -278,161 +282,193 @@ class _HomeScreenState extends State<HomeScreen> {
               .toIso8601String()
               .split('T')[0];
 
-      // Simpler query that doesn't require composite index
       final snapshot =
           await _firestore
               .collection('Records')
               .where('user_id', isEqualTo: userId)
               .get();
 
-      // Filter client-side for today's records
       final todayDocs =
           snapshot.docs.where((doc) {
-            final docDate = doc['date_time'] as String;
-            return docDate.compareTo(today) >= 0 &&
+            final data = doc.data();
+            final docDate = data['date_time'] as String?;
+            return docDate != null &&
+                docDate.compareTo(today) >= 0 &&
                 docDate.compareTo(tomorrow) < 0;
           }).toList();
 
       if (todayDocs.isNotEmpty) {
-        // Sort by date_time to get the latest
-        todayDocs.sort(
-          (a, b) =>
-              (b['date_time'] as String).compareTo(a['date_time'] as String),
-        );
+        todayDocs.sort((a, b) {
+          final aDate = a.data()['date_time'] as String? ?? '';
+          final bDate = b.data()['date_time'] as String? ?? '';
+          return bDate.compareTo(aDate);
+        });
 
-        // Store the current record and its ID for later updates
-        _currentRecord = todayDocs.first.data();
+        final docData = todayDocs.first.data();
+        _currentRecord = docData;
         _currentRecordId = todayDocs.first.id;
 
-        setState(() {
-          _currentAttendanceStatus = todayDocs.first['status'];
+        if (mounted) {
+          setState(() {
+            _currentAttendanceStatus =
+                docData['status'] as String? ?? "Unknown";
 
-          // Retrieve the existing hours_in value if it exists
-          _totalHoursInToday = (todayDocs.first['hours_in'] ?? 0.0).toDouble();
+            final hoursIn = docData['hours_in'];
+            _totalHoursInToday = (hoursIn is num) ? hoursIn.toDouble() : 0.0;
 
-          // If we're currently in the geofence and status is "IN", restore entry time
-          if (_isInsideGeofence && todayDocs.first['status'] == "IN") {
-            final lastEntryTimeStr = todayDocs.first['entry_time'];
-            if (lastEntryTimeStr != null) {
-              _geofenceEntryTime = DateTime.parse(lastEntryTimeStr);
+            // Fixed entry time handling
+            if (_currentAttendanceStatus == "IN") {
+              final entryTimeStr = docData['entry_time'] as String?;
+              if (entryTimeStr != null && entryTimeStr.isNotEmpty) {
+                try {
+                  _geofenceEntryTime = DateTime.parse(entryTimeStr);
+                  debugPrint("Restored entry time: $_geofenceEntryTime");
+                } catch (e) {
+                  debugPrint("Error parsing entry time: $e");
+                  // If we're IN but can't parse entry time, set it to now
+                  _geofenceEntryTime = DateTime.now();
+                  _updateEntryTimeInFirestore();
+                }
+              } else if (_isInsideGeofence) {
+                // If status is IN but no entry time, set it to now
+                _geofenceEntryTime = DateTime.now();
+                _updateEntryTimeInFirestore();
+              }
             } else {
-              // If entry_time is missing but status is IN, set it to now
-              _geofenceEntryTime = DateTime.now();
+              _geofenceEntryTime = null;
             }
-          } else {
-            // Clear entry time if status is OUT and set exit_time if needed
-            _geofenceEntryTime = null;
-          }
-        });
+          });
+        }
       } else {
-        setState(() {
-          _currentAttendanceStatus = "Not Recorded";
-          _totalHoursInToday = 0.0;
-          _currentRecord = null;
-          _currentRecordId = null;
-          _geofenceEntryTime = null;
-        });
+        if (mounted) {
+          setState(() {
+            _currentAttendanceStatus = "Not Recorded";
+            _totalHoursInToday = 0.0;
+            _currentRecord = null;
+            _currentRecordId = null;
+            _geofenceEntryTime = null;
+          });
+        }
       }
     } catch (e) {
       debugPrint("Error fetching attendance status: $e");
     }
   }
 
-  // Modified to handle hours calculation
+  // Helper method to update entry time in Firestore
+  Future<void> _updateEntryTimeInFirestore() async {
+    if (_currentRecordId != null && _geofenceEntryTime != null) {
+      try {
+        await _firestore.collection('Records').doc(_currentRecordId!).update({
+          'entry_time': _geofenceEntryTime!.toIso8601String(),
+        });
+        debugPrint("Updated entry time in Firestore: $_geofenceEntryTime");
+      } catch (e) {
+        debugPrint("Error updating entry time: $e");
+      }
+    }
+  }
+
+  // Fixed _updateAttendanceStatus method
   Future<void> _updateAttendanceStatus() async {
-    // Don't update if already recording to prevent duplicate records
     if (_isRecordingAttendance) return;
 
     final userId = _authService.currentUser?.uid;
     if (userId == null) return;
 
-    // Get current location
     final currentLocation = _locationService.currentLocation;
     if (currentLocation == null ||
         currentLocation.latitude == null ||
         currentLocation.longitude == null) {
-      return; // Can't update without location data
-    }
-
-    // Calculate if geofence status changes
-    final bool wasInsideGeofence = _isInsideGeofence;
-    _checkIfInGeofence(); // Update _isInsideGeofence based on current location
-    final newStatus = _isInsideGeofence ? "IN" : "OUT";
-
-    final bool statusChanged = (newStatus != _currentAttendanceStatus);
-    final bool geofenceTransition = (wasInsideGeofence != _isInsideGeofence);
-
-    if (!statusChanged && !geofenceTransition) {
-      // Neither the recorded status nor our physical position has changed
       return;
     }
+
+    final bool wasInsideGeofence = _isInsideGeofence;
+    _checkIfInGeofence();
+    final String newStatus = _isInsideGeofence ? "IN" : "OUT";
+
+    bool shouldUpdate = false;
+    String updateReason = "";
+
+    if (_currentAttendanceStatus == "Not Recorded" ||
+        _currentAttendanceStatus == "Unknown") {
+      shouldUpdate = true;
+      updateReason = "Initial status recording";
+    } else if (wasInsideGeofence != _isInsideGeofence) {
+      shouldUpdate = true;
+      updateReason =
+          _isInsideGeofence ? "Entering geofence" : "Leaving geofence";
+    } else if (_currentAttendanceStatus != newStatus) {
+      shouldUpdate = true;
+      updateReason = "Status correction";
+    }
+
+    if (!shouldUpdate) {
+      return;
+    }
+
+    debugPrint("Updating attendance: $updateReason. New status: $newStatus");
 
     setState(() {
       _isRecordingAttendance = true;
     });
 
     try {
-      // Get current date and time
       final now = DateTime.now();
-      final today = now.toIso8601String().split('T')[0];
 
-      // Calculate hours spent in geofence if we're leaving
+      // Handle geofence exit - calculate and add hours
       if (wasInsideGeofence &&
           !_isInsideGeofence &&
           _geofenceEntryTime != null) {
-        // Exiting the geofence - calculate hours spent
-        final exitTime = now;
-        final duration = exitTime.difference(_geofenceEntryTime!);
+        final duration = now.difference(_geofenceEntryTime!);
         final hoursSpent = duration.inMinutes / 60.0;
-
-        // Add to the total hours for today
         _totalHoursInToday += hoursSpent;
 
         debugPrint(
-          "Exiting geofence. Hours spent: $hoursSpent. Total today: $_totalHoursInToday",
+          "Exiting geofence. Hours spent: ${_formatHoursAndMinutes(hoursSpent)}. Total today: ${_formatHoursAndMinutes(_totalHoursInToday)}",
         );
-      } else if (!wasInsideGeofence && _isInsideGeofence) {
-        // Entering the geofence - record entry time
+      }
+      // Handle geofence entry - set entry time
+      else if (!wasInsideGeofence && _isInsideGeofence) {
         _geofenceEntryTime = now;
         debugPrint("Entering geofence at: ${now.toIso8601String()}");
       }
 
-      // Check if user has an associated vehicle
+      // Get vehicle ID if exists
       String? vehicleId;
-      final vehiclesSnapshot =
-          await _firestore
-              .collection('Vehicles')
-              .where('user_id', isEqualTo: userId)
-              .limit(1)
-              .get();
+      try {
+        final vehiclesSnapshot =
+            await _firestore
+                .collection('Vehicles')
+                .where('user_id', isEqualTo: userId)
+                .limit(1)
+                .get();
 
-      // If vehicle exists, get its ID
-      if (vehiclesSnapshot.docs.isNotEmpty) {
-        vehicleId = vehiclesSnapshot.docs.first.id;
+        if (vehiclesSnapshot.docs.isNotEmpty) {
+          vehicleId = vehiclesSnapshot.docs.first.id;
+        }
+      } catch (e) {
+        debugPrint("Error fetching vehicle data: $e");
       }
 
-      // Format time with hours and minutes
-      final formattedTime = _formatHoursAndMinutes(_totalHoursInToday);
-
-      // Prepare location data
-      final locationData = {
+      final locationData = <String, dynamic>{
         'status': newStatus,
         'date_time': now.toIso8601String(),
         'lat': currentLocation.latitude,
         'lng': currentLocation.longitude,
         'isLoggedIn': true,
-        'hours_in': _totalHoursInToday, // Add hours_in field
+        'hours_in': _totalHoursInToday,
       };
 
-      // Handle entry_time and exit_time fields
+      // Fixed entry_time and exit_time handling
       if (_isInsideGeofence) {
-        // When entering the geofence
-        locationData['entry_time'] = _geofenceEntryTime!.toIso8601String();
-
-        // Clear any previous exit_time if re-entering
-        locationData['exit_time'] = null;
+        // When entering or staying in geofence
+        if (_geofenceEntryTime != null) {
+          locationData['entry_time'] = _geofenceEntryTime!.toIso8601String();
+        }
+        locationData['exit_time'] = null; // Clear exit time
       } else {
-        // When exiting the geofence
+        // When exiting geofence
         locationData['exit_time'] = now.toIso8601String();
 
         // Keep the previous entry_time for reference
@@ -440,30 +476,25 @@ class _HomeScreenState extends State<HomeScreen> {
           locationData['entry_time'] = _geofenceEntryTime!.toIso8601String();
         }
 
-        // Reset entry time after recording
+        // Clear entry time for next session
         _geofenceEntryTime = null;
       }
 
-      // Add vehicle_id to the record if it exists
       if (vehicleId != null) {
         locationData['vehicle_id'] = vehicleId;
       }
 
-      // Update existing record or create a new one
-      if (_currentRecordId != null) {
-        // Update existing record
+      // Update or create record
+      if (_currentRecordId != null && _currentRecordId!.isNotEmpty) {
         await _firestore
             .collection('Records')
-            .doc(_currentRecordId)
+            .doc(_currentRecordId!)
             .update(locationData);
       } else {
-        // Create new record for today
         final docRef = await _firestore.collection('Records').add({
           'user_id': userId,
-          ...locationData, // Spread the location data
+          ...locationData,
         });
-
-        // Save the record ID for future updates
         _currentRecordId = docRef.id;
       }
 
@@ -471,39 +502,46 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentAttendanceStatus = newStatus;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(
-                _isInsideGeofence ? Icons.check_circle : Icons.info_outline,
-                color: Colors.white,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                _isInsideGeofence
-                    ? 'Checked IN at ${_formatTime(now)} ($formattedTime today)'
-                    : 'Checked OUT at ${_formatTime(now)} ($formattedTime today)',
-              ),
-            ],
+      if (mounted) {
+        final formattedTime = _formatHoursAndMinutes(_totalHoursInToday);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  _isInsideGeofence ? Icons.check_circle : Icons.info_outline,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _isInsideGeofence
+                      ? 'Checked IN at ${_formatTime(now)} ($formattedTime today)'
+                      : 'Checked OUT at ${_formatTime(now)} ($formattedTime today)',
+                ),
+              ],
+            ),
+            backgroundColor: _isInsideGeofence ? Colors.green : Colors.orange,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
           ),
-          backgroundColor: _isInsideGeofence ? Colors.green : Colors.orange,
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+        );
+      }
     } catch (e) {
       debugPrint("Error updating attendance status: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to update attendance: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update attendance: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
-      setState(() {
-        _isRecordingAttendance = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isRecordingAttendance = false;
+        });
+      }
     }
   }
 
@@ -512,8 +550,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return DateFormat('HH:mm:ss').format(dateTime);
   }
 
-  // Helper method to format hours and minutes
+  // Fixed helper method to format hours and minutes properly
   String _formatHoursAndMinutes(double totalHours) {
+    if (totalHours <= 0) return '0m';
+
     final hours = totalHours.floor();
     final minutes = ((totalHours - hours) * 60).round();
 
@@ -528,46 +568,31 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Add a periodic timer to update hours when staying inside the geofence
-  Timer? _hoursUpdateTimer;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Start a timer to periodically update hours_in while inside the geofence
-    _hoursUpdateTimer?.cancel();
-    _hoursUpdateTimer = Timer.periodic(const Duration(minutes: 5), (timer) {
-      if (_isInsideGeofence && _geofenceEntryTime != null) {
-        _updateHoursInRecord();
-      }
-    });
-  }
-
-  // Method to update hours in Firestore without changing status
-  // Update the _updateHoursInRecord method to handle partial sessions
+  // Fixed method to update hours in Firestore without changing status
   Future<void> _updateHoursInRecord() async {
     if (!_isInsideGeofence ||
         _geofenceEntryTime == null ||
-        _currentRecordId == null) {
+        _currentRecordId == null ||
+        _currentRecordId!.isEmpty) {
       return;
     }
 
     try {
       final now = DateTime.now();
-      final currentSessionHours =
-          now.difference(_geofenceEntryTime!).inMinutes / 60.0;
+      final currentSessionMinutes =
+          now.difference(_geofenceEntryTime!).inMinutes;
+      final currentSessionHours = currentSessionMinutes / 60.0;
       final temporaryTotalHours = _totalHoursInToday + currentSessionHours;
 
-      // Update hours_in and timestamps but don't modify permanent total yet
-      await _firestore.collection('Records').doc(_currentRecordId).update({
+      await _firestore.collection('Records').doc(_currentRecordId!).update({
         'hours_in': temporaryTotalHours,
         'last_updated': now.toIso8601String(),
-        // Don't update exit_time since user is still inside
-        // We're just keeping track of ongoing hours
+        'current_session_minutes': currentSessionMinutes, // For debugging
       });
 
-      debugPrint("Updated hours_in (periodic): $temporaryTotalHours hours");
+      debugPrint(
+        "Updated hours_in (periodic): ${_formatHoursAndMinutes(temporaryTotalHours)}",
+      );
     } catch (e) {
       debugPrint("Error updating hours_in: $e");
     }
@@ -577,24 +602,29 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _followUser = !_followUser;
 
-      // If turning follow on, immediately center on user
-      if (_followUser && _locationService.currentLocation != null) {
-        _mapController.move(
-          LatLng(
-            _locationService.currentLocation!.latitude!,
-            _locationService.currentLocation!.longitude!,
-          ),
-          _mapController.zoom,
-        );
+      if (_followUser &&
+          _locationService.currentLocation != null &&
+          _locationService.currentLocation!.latitude != null &&
+          _locationService.currentLocation!.longitude != null) {
+        try {
+          _mapController.move(
+            LatLng(
+              _locationService.currentLocation!.latitude!,
+              _locationService.currentLocation!.longitude!,
+            ),
+            _mapController.zoom,
+          );
+        } catch (e) {
+          debugPrint("Error moving map: $e");
+        }
       }
     });
   }
 
-  // Show logout confirmation dialog
   Future<void> _showLogoutConfirmation() async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // User must tap a button to close the dialog
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Logout'),
@@ -615,7 +645,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () async {
                 Navigator.of(context).pop();
 
-                // Show loading indicator
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -624,11 +653,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 );
 
-                // Call the logout function
                 await _logout();
 
-                // Close loading indicator (may not be necessary as auth state change
-                // will probably navigate away from this screen)
                 if (mounted) {
                   Navigator.of(context).pop();
                 }
@@ -689,7 +715,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     statusMessage: _statusMessage,
                   ),
 
-                  // Attendance status indicator with hours and minutes
+                  // Attendance status indicator with formatted hours and minutes
                   Container(
                     padding: const EdgeInsets.symmetric(
                       vertical: 8,
@@ -729,10 +755,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(
+                        /* Text(
                           'Total Time Today: $formattedTime',
                           style: const TextStyle(fontSize: 12),
-                        ),
+                        ), */
                         if (_isInsideGeofence && _geofenceEntryTime != null)
                           Text(
                             'Current Session: $ongoingTime (since ${DateFormat('HH:mm').format(_geofenceEntryTime!)})',
@@ -749,7 +775,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (_locationService.currentLocation != null)
                     LocationInfo(location: _locationService.currentLocation!),
 
-                  // Map view (existing code...)
+                  // Map view
                   Expanded(
                     child: Stack(
                       children: [
@@ -764,7 +790,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               flags: InteractiveFlag.all,
                             ),
                             onPositionChanged: (position, hasGesture) {
-                              // Disable follow mode if user manually moves the map
                               if (hasGesture && _followUser) {
                                 setState(() {
                                   _followUser = false;
