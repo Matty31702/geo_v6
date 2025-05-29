@@ -48,7 +48,7 @@ const secondaryAuth = getAuth(secondaryApp);
 const personnelService = {
   // Handle fetching all personnels
   async getAllPersonnels(
-    isSuperAdmin: boolean
+    isSuperAdmin?: boolean
   ): Promise<FirestoreResponse<(Personnel & { vehicle?: Vehicle })[]>> {
     try {
       // Get all users and vehicles
