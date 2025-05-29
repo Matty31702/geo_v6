@@ -342,12 +342,36 @@ const Activities = () => {
                         </td>
                         {statusFilter === "IN" && (
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
-                            {record.entry_time ? record.entry_time : "N/A"}
+                            {record.entry_time
+                              ? new Date(record.entry_time).toLocaleString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  }
+                                )
+                              : "N/A"}
                           </td>
                         )}
                         {statusFilter === "OUT" && (
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
-                            {record.exit_time ? record.exit_time : "N/A"}
+                            {record.exit_time
+                              ? new Date(record.exit_time).toLocaleString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  }
+                                )
+                              : "N/A"}
                           </td>
                         )}
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
