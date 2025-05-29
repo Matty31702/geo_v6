@@ -32,6 +32,15 @@ class GeofenceModel {
     LatLng(8.480077545798508, 124.65920321515875),
   ];
 
+  // Geofence polygon points
+  /* final List<LatLng> _geofencePoints = const [
+    LatLng(8.448564596768122, 124.6135788799146),
+    LatLng(8.447903721063412, 124.61231543740246),
+    LatLng(8.446738713059787, 124.61313774574927),
+    LatLng(8.447285208161134, 124.61506503093773),
+    LatLng(8.448579823678969, 124.61358518084529),
+  ]; */
+
   Polygon getGeofencePolygon() {
     return Polygon(
       points: _geofencePoints,
