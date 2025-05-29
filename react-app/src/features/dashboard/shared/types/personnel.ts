@@ -7,6 +7,7 @@ export interface Personnel {
   phone_number: string;
   gender: string;
   email: string;
+  password?: string; // This is for the superadmin only
   isVerified: boolean;
   type: string;
   name: string;
@@ -15,6 +16,7 @@ export interface Personnel {
     seconds: number;
     nanoseconds: number;
   };
+  auth_uid?: string;
   address: string;
   lng: number;
   guardian_name: string;
@@ -52,6 +54,8 @@ export interface PersonnelEditFormDataProps {
   id: Personnel["id"];
   name: Personnel["name"];
   phone_number: Personnel["phone_number"];
+  email: Personnel["email"];
+  password: Personnel["password"];
   gender: Personnel["gender"];
   birthday: Personnel["birthday"];
   address: Personnel["address"];

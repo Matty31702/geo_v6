@@ -19,6 +19,7 @@ import MapFooter from "./components/MapFooter";
 import ViewTableModal from "./components/ViewTableModal";
 import { Vehicle } from "../../features/vehicles/shared/types/vehicle";
 import { Personnel } from "../../features/dashboard/shared/types/personnel";
+import useAuth from "../../features/dashboard/hooks/useAuth";
 
 const Monitoring = () => {
   // Use custom hook to get personnel data
@@ -34,6 +35,9 @@ const Monitoring = () => {
     "Personnel"
   );
 
+  // Open auth
+  const { isSuperAdmin } = useAuth();
+
   // Modal State
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -46,14 +50,14 @@ const Monitoring = () => {
   // Refresh personnel and vehicle data without showing loading indicator
   const handleRefresh = () => {
     setRefreshing(true);
-    Promise.all([getAllPersonnels(), getAllVehicles()]).then(() => {
+    Promise.all([getAllPersonnels(isSuperAdmin), getAllVehicles()]).then(() => {
       setTimeout(() => setRefreshing(false), 600);
     });
   };
 
   // Load personnel and vehicles on component mount (silently)
   useEffect(() => {
-    getAllPersonnels();
+    getAllPersonnels(isSuperAdmin);
     getAllVehicles();
   }, []);
 
@@ -112,7 +116,7 @@ const Monitoring = () => {
   // Refresh data every 30 seconds silently (no loading state)
   useEffect(() => {
     const interval = setInterval(() => {
-      getAllPersonnels();
+      getAllPersonnels(isSuperAdmin);
       getAllVehicles();
     }, 30000);
 
@@ -169,9 +173,9 @@ const Monitoring = () => {
     ...vehiclesWithCoordinates.map((v) => ({ lat: v.lat, lng: v.lng })),
   ];
 
-  if (vehicles) {
+  /* if (vehicles) {
     console.log(vehicles);
-  }
+  } */
 
   return (
     <>

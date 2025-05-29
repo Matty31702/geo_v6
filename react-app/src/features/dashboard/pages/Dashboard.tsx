@@ -48,7 +48,7 @@ const Dashboard = () => {
 
   // Fetch data only once when component mounts
   useEffect(() => {
-    getAllPersonnels();
+    getAllPersonnels(isSuperAdmin);
     getAllVehicles();
   }, []); // Empty dependency array ensures it only runs once
 
@@ -102,7 +102,7 @@ const Dashboard = () => {
   const handleObjectAdded = (activeTab: string) => {
     // Refresh object list
     if (activeTab === "Personnel") {
-      getAllPersonnels();
+      getAllPersonnels(isSuperAdmin);
     } else {
       getAllVehicles();
       showToast.success("Successfully created a new vehicle!");

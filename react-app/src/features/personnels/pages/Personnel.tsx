@@ -40,7 +40,7 @@ const Personnel = () => {
   const { isSuperAdmin } = useAuth();
 
   useEffect(() => {
-    getAllPersonnels();
+    getAllPersonnels(isSuperAdmin);
   }, []);
 
   // Get filtered personnel based on search and filters
@@ -66,13 +66,13 @@ const Personnel = () => {
 
   // Handle refresh function
   const handleRefresh = () => {
-    getAllPersonnels();
+    getAllPersonnels(isSuperAdmin);
   };
 
   // Handle successful user addition
   const handleUserAdded = () => {
     // Refresh the personnel list
-    getAllPersonnels();
+    getAllPersonnels(isSuperAdmin);
     // Show success message or notification if needed
     showToast.success("Successfully created a new personnel!");
   };
@@ -80,7 +80,7 @@ const Personnel = () => {
   // Handle successful user edit
   const handleUserEdited = () => {
     // Refresh the personnel list
-    getAllPersonnels();
+    getAllPersonnels(isSuperAdmin);
     // Show success message or notification if needed
     showToast.success("Successfully edited a personnel!");
   };
@@ -149,6 +149,9 @@ const Personnel = () => {
                     #
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mark Number
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -176,6 +179,11 @@ const Personnel = () => {
                     <tr key={person.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                         {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {person.mark_number || "-"}
+                        </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
