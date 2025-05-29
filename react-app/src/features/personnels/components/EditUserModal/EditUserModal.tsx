@@ -81,7 +81,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   });
 
   // Use personnel hook
-  const { loading, editPersonnel, updateUserCredentials } = usePersonnel();
+  const { loading, editPersonnel } = usePersonnel();
 
   // Validate credential form
   const validateCredentialForm = (): string | null => {
