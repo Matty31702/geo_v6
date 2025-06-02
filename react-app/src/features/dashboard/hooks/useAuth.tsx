@@ -24,47 +24,51 @@ const useAuth = (): UseAuthReturn => {
     const auth = getAuth();
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Get additional user data from Firestore
-        try {
+      try {
+        if (user) {
+          // Get additional user data from Firestore
           const userDocRef = doc(database, "Users", user.uid);
           const userDoc = await getDoc(userDocRef);
 
+          let userType = "admin"; // Default fallback
+
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            // Extend the user object with role information
-            const extendedUser: AuthUser = {
-              ...user,
-              type: userData.type || userData.role || "user", // Use type or role field depending on your DB structure
-            };
-
-            // console.log(extendedUser.type);
-
-            if (extendedUser && extendedUser.type) {
-              setCurrentUser(extendedUser);
-              setUserRole(extendedUser.type);
-            }
-          } else {
-            // If no user document exists, set default role
-            const defaultUser: AuthUser = {
-              ...user,
-              type: "admin",
-            };
-            setCurrentUser(defaultUser);
-            setUserRole("admin");
+            userType = userData.type || userData.role || "admin";
           }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setCurrentUser(user as AuthUser);
-          setUserRole("admin"); // Default to regular user on error
-        }
-      } else {
-        // No user is signed in
-        setCurrentUser(null);
-        setUserRole(null);
-      }
 
-      setIsLoading(false);
+          // Create extended user object
+          const extendedUser: AuthUser = {
+            ...user,
+            type: userType,
+          };
+
+          setCurrentUser(extendedUser);
+          setUserRole(userType);
+        } else {
+          // No user is signed in
+          setCurrentUser(null);
+          setUserRole(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+
+        if (user) {
+          // Fallback to default user on error
+          const defaultUser: AuthUser = {
+            ...user,
+            type: "admin",
+          };
+          setCurrentUser(defaultUser);
+          setUserRole("admin");
+        } else {
+          setCurrentUser(null);
+          setUserRole(null);
+        }
+      } finally {
+        // Always set loading to false, regardless of success or error
+        setIsLoading(false);
+      }
     });
 
     // Cleanup subscription
@@ -73,7 +77,7 @@ const useAuth = (): UseAuthReturn => {
 
   // Utility computed properties for role checks
   const isAdmin = userRole === "admin" || userRole === "superadmin";
-  const isSuperAdmin = userRole === "superadmin";
+  const isSuperAdmin: boolean = userRole === "superadmin";
 
   return {
     currentUser,
