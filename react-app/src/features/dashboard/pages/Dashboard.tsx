@@ -35,7 +35,7 @@ const Dashboard = () => {
   // Use the hooks
   const { personnels, getAllPersonnels } = usePersonnel();
   const { vehicles, getAllVehicles } = useVehicle();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isLoading: authLoading } = useAuth(); // Get loading state
 
   // State for calculated stats
   const [stats, setStats] = useState<DashboardStats>({
@@ -46,11 +46,14 @@ const Dashboard = () => {
     vehiclesInside: 0,
   });
 
-  // Fetch data only once when component mounts
+  // Fetch data only once when component mounts and auth is ready
   useEffect(() => {
-    getAllPersonnels(isSuperAdmin);
-    getAllVehicles();
-  }, []); // Empty dependency array ensures it only runs once
+    if (!authLoading) {
+      // Only fetch when auth is resolved
+      getAllPersonnels(isSuperAdmin);
+      getAllVehicles();
+    }
+  }, [authLoading, isSuperAdmin]); // Add dependencies
 
   // Process data separately when personnels or vehicles change
   useEffect(() => {
@@ -108,6 +111,15 @@ const Dashboard = () => {
       showToast.success("Successfully created a new vehicle!");
     }
   };
+
+  // Show loading spinner while auth is being resolved
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -171,13 +183,18 @@ const Dashboard = () => {
             <Car className="mr-2" size={18} />
             Vehicles
           </Link>
-          <button
-            onClick={handleAddButtonClick}
-            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md flex items-center justify-center"
-          >
-            <Clock className="mr-2" size={18} />
-            Add Personnel/Vehicles
-          </button>
+
+          {/* Conditionally render the Add button only for superadmins */}
+          {isSuperAdmin && (
+            <button
+              onClick={handleAddButtonClick}
+              className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-md flex items-center justify-center"
+            >
+              <Clock className="mr-2" size={18} />
+              Add Personnel/Vehicles
+            </button>
+          )}
+
           <Link
             to={LINKS.ACTIVITIES}
             className="w-full py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-md flex items-center justify-center"
